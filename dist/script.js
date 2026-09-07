@@ -1,59 +1,118 @@
 (() => {
+  'use strict';
+  const root = document.documentElement;
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const header = document.querySelector('[data-header]');
-  const menuButton = document.querySelector('[data-menu-toggle]');
-  const menu = document.querySelector('[data-menu]');
+  const menu = document.querySelector('#mobile-menu');
+  const menuToggle = document.querySelector('[data-menu-toggle]');
+  const menuClose = document.querySelector('[data-menu-close]');
   const mobileCall = document.querySelector('.mobile-call');
+  const hero = document.querySelector('.hero');
   const contact = document.querySelector('#contact');
+  const footer = document.querySelector('.site-footer');
 
-  const setHeaderState = () => {
-    if (!header) return;
-    header.classList.toggle('is-scrolled', window.scrollY > 64);
+  // A slow image or unavailable storage must never leave the introduction on screen.
+  const finishIntro = () => {
+    root.classList.remove('is-loading');
+    clearTimeout(window.caretakerLoaderTimeout);
+    try { sessionStorage.setItem('caretaker-intro', 'seen'); } catch (_) { /* Optional enhancement. */ }
   };
+  const heroImage = document.querySelector('[data-hero-image]');
+  const introDeadline = setTimeout(finishIntro, 1200);
+  const imageReady = heroImage && typeof heroImage.decode === 'function' ? heroImage.decode() : Promise.resolve();
+  imageReady.catch(() => {}).then(() => {
+    clearTimeout(introDeadline);
+    finishIntro();
+  });
+  window.addEventListener('pointerdown', finishIntro, { once: true, passive: true });
+  window.addEventListener('keydown', finishIntro, { once: true });
+  window.addEventListener('pageshow', (event) => { if (event.persisted) finishIntro(); });
 
-  const closeMenu = () => {
-    if (!menuButton || !menu) return;
-    menuButton.setAttribute('aria-expanded', 'false');
-    menu.classList.remove('is-open');
-    document.body.classList.remove('menu-open');
-  };
-
-  if (menuButton && menu) {
-    menuButton.addEventListener('click', () => {
-      const open = menuButton.getAttribute('aria-expanded') === 'true';
-      menuButton.setAttribute('aria-expanded', String(!open));
-      menu.classList.toggle('is-open', !open);
-      document.body.classList.toggle('menu-open', !open);
+  // Native dialog provides focus containment, an inert background and Escape support.
+  if (menu && menuToggle && menuClose && typeof menu.showModal === 'function') {
+    root.classList.add('nav-enhanced');
+    menuToggle.hidden = false;
+    const resetMenu = () => {
+      document.body.classList.remove('menu-open');
+      menuToggle.setAttribute('aria-expanded', 'false');
+    };
+    const closeMenu = () => {
+      if (menu.open) menu.close();
+      resetMenu();
+    };
+    menuToggle.addEventListener('click', () => {
+      finishIntro();
+      menu.showModal();
+      document.body.classList.add('menu-open');
+      menuToggle.setAttribute('aria-expanded', 'true');
     });
-
-    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', closeMenu));
-
-    window.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') closeMenu();
+    menuClose.addEventListener('click', closeMenu);
+    menu.addEventListener('close', resetMenu);
+    menu.addEventListener('cancel', resetMenu);
+    menu.addEventListener('click', (event) => {
+      if (event.target !== menu) return;
+      const bounds = menu.getBoundingClientRect();
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) closeMenu();
     });
+    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
+      closeMenu();
+      const href = link.getAttribute('href');
+      if (!href || !href.startsWith('#')) return;
+      const target = document.querySelector(href);
+      if (target) {
+        target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+        target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
+      }
+    }));
+    const desktop = window.matchMedia('(min-width: 900px)');
+    desktop.addEventListener('change', (event) => { if (event.matches) closeMenu(); });
+    window.addEventListener('pagehide', closeMenu);
   }
 
-  setHeaderState();
-  window.addEventListener('scroll', setHeaderState, { passive: true });
+  let framePending = false;
+  const updateHeader = () => {
+    header?.classList.toggle('is-scrolled', window.scrollY > 24);
+    framePending = false;
+  };
+  updateHeader();
+  window.addEventListener('scroll', () => {
+    if (framePending) return;
+    framePending = true;
+    requestAnimationFrame(updateHeader);
+  }, { passive: true });
 
   const revealItems = document.querySelectorAll('[data-reveal]');
-  if ('IntersectionObserver' in window) {
-    const revealObserver = new IntersectionObserver((entries, observer) => {
+  let revealObserver;
+  const showAll = () => {
+    root.classList.remove('motion-ready');
+    revealObserver?.disconnect();
+  };
+  if ('IntersectionObserver' in window && !reducedMotion.matches) {
+    revealObserver = new IntersectionObserver((entries, observer) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         entry.target.classList.add('is-visible');
         observer.unobserve(entry.target);
       });
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
-
+    }, { rootMargin: '0px 0px -24px 0px', threshold: 0.05 });
     revealItems.forEach((item) => revealObserver.observe(item));
-  } else {
-    revealItems.forEach((item) => item.classList.add('is-visible'));
+    root.classList.add('motion-ready');
   }
+  reducedMotion.addEventListener('change', (event) => {
+    if (event.matches) { showAll(); finishIntro(); }
+  });
+  window.addEventListener('beforeprint', showAll);
 
-  if (contact && mobileCall && 'IntersectionObserver' in window) {
-    const contactObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => mobileCall.classList.toggle('is-hidden', entry.isIntersecting));
-    }, { threshold: 0.08 });
-    contactObserver.observe(contact);
+  // Keep the mobile shortcut clear of the hero and full contact/footer area.
+  if (mobileCall && hero && contact && footer && 'IntersectionObserver' in window) {
+    const visibility = new Map([[hero, true], [contact, false], [footer, false]]);
+    const callObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => visibility.set(entry.target, entry.isIntersecting));
+      mobileCall.classList.toggle('is-visible', [...visibility.values()].every((visible) => !visible));
+    });
+    visibility.forEach((_, element) => callObserver.observe(element));
   }
+  const year = document.querySelector('[data-year]');
+  if (year) year.textContent = String(new Date().getFullYear());
 })();
