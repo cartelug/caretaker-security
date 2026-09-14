@@ -8,7 +8,7 @@ The site presents the company’s core security services, specialist capabilitie
 
 The visual system was rebuilt around an "operations log" concept instead of a generic dark/gold premium template: an off-white "paper" background, near-black ink, and a single alarm-orange accent used sparingly (status dots, the primary call-to-action, small tags) rather than painted across headings. Section data (licence details, deployment stats, service listings) is presented as ledger/manifest rows and a data grid rather than icon cards, set in a monospace type paired with a plain grotesk for headings — closer to an official document or incident log than a marketing brochure. There are no decorative arrow icons, oversized display type, or scroll-triggered reveal animations; content is simply present, like a real record. The licensed Nimbus Sans family (regular/bold) is used for headings and body copy; the previously included Nimbus Sans Narrow display cut has been removed as it's no longer used. The native mobile navigation dialog supports keyboard focus, Escape, section links and resizing to desktop.
 
-The hero no longer uses the AI-generated illustrative photography — the design leans on typography and data instead of a stock-feeling image. The original hero WebP crops remain in `dist/assets/` unused, in case real site photography is added later.
+The hero photography is unchanged from the previous version (same `dist/assets/caretaker-hero.webp` / `caretaker-hero-mobile.webp` files, same responsive `<picture>` source-swap and preloads) but is now presented as a bordered, captioned photo alongside the heading rather than a full-bleed cinematic background — closer to an attached exhibit photo in a file than a marketing hero image.
 
 ## Run locally
 
@@ -29,7 +29,7 @@ Then open `http://localhost:8080`.
 
 ## Assets and content
 
-- The previous hero used AI-generated illustrative photography, which did not depict actual Caretaker personnel or premises. The v2 design no longer displays it; the WebP crops remain in `dist/assets/` unused. See "Design system (v2)" above.
+- The hero is AI-generated illustrative photography, created for this website. It does not depict actual Caretaker personnel or premises — the page now says so directly, in the photo's caption. Desktop and mobile WebP crops total approximately 109 KB.
 - Leadership uses names and roles from the existing site, without invented portraits.
 - Nimbus Sans is distributed as unmodified OpenType files (regular and bold weights only). Its copyright and licensing notice is included in `dist/assets/FONT-LICENSE.txt`.
 - The source repository did not contain its referenced company-profile PDF. The profile action now opens an email request instead of a broken download.

@@ -62,11 +62,17 @@ address{font-style:normal}
 
 /* Hero */
 .hero{background:var(--paper);padding-block:64px var(--space)}
+.hero__grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px 56px;align-items:start}
+.hero__text{grid-column:1;grid-row:1}
 .hero .kicker{margin-bottom:22px}
-.hero h1{font-size:clamp(38px,5.6vw,68px);max-width:900px}
+.hero h1{font-size:clamp(38px,5.6vw,68px)}
 .hero__lede{margin-top:24px;max-width:540px;color:var(--grey);font-size:17px;line-height:1.6}
 .hero__actions{display:flex;flex-wrap:wrap;gap:14px;margin-top:34px}
-.ledger{border-top:1px solid var(--ink);display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+.hero__frame{grid-column:2;grid-row:1 / span 2;border:1px solid var(--ink);padding:8px;align-self:start}
+.hero__frame picture{display:block;aspect-ratio:1586/992;overflow:hidden;background:var(--ink)}
+.hero__frame img{width:100%;height:100%;object-fit:cover}
+.hero__frame figcaption{margin-top:8px;font-family:var(--mono);font-size:10px;color:var(--grey);text-transform:uppercase;letter-spacing:.03em}
+.ledger{grid-column:1/-1;border-top:1px solid var(--ink);display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
 .ledger>div{border-right:1px solid var(--line);border-bottom:1px solid var(--ink);padding:18px 22px 18px 0}
 .ledger>div:last-child{border-right:0}
 .ledger dt{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:var(--grey)}
@@ -198,6 +204,9 @@ address{font-style:normal}
   .nav-enhanced .menu-toggle{display:flex;align-items:center;gap:12px;min-height:44px;font-family:var(--mono);font-size:11px}
   .menu-toggle__icon{width:20px;display:flex;flex-direction:column;gap:5px}.menu-toggle__icon i{height:1px;background:var(--ink);width:20px}
   .hero{padding-top:48px}.hero__actions{flex-direction:column;align-items:stretch}
+  .hero__grid{grid-template-columns:1fr;gap:32px}
+  .hero__text,.hero__frame{grid-column:1;grid-row:auto}
+  .hero__frame{max-width:420px}
   .ledger{grid-template-columns:repeat(2,minmax(0,1fr))}.ledger>div{padding-top:16px}
   .ledger>div:nth-child(2n){border-right:0}.ledger>div:nth-last-child(-n+2){border-bottom:0}
   .section-heading{margin-bottom:36px}
