@@ -1,7 +1,6 @@
 (() => {
   'use strict';
   const root = document.documentElement;
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
   const header = document.querySelector('[data-header]');
   const menu = document.querySelector('#mobile-menu');
   const menuToggle = document.querySelector('[data-menu-toggle]');
@@ -10,23 +9,6 @@
   const hero = document.querySelector('.hero');
   const contact = document.querySelector('#contact');
   const footer = document.querySelector('.site-footer');
-
-  // A slow image or unavailable storage must never leave the introduction on screen.
-  const finishIntro = () => {
-    root.classList.remove('is-loading');
-    clearTimeout(window.caretakerLoaderTimeout);
-    try { sessionStorage.setItem('caretaker-intro', 'seen'); } catch (_) { /* Optional enhancement. */ }
-  };
-  const heroImage = document.querySelector('[data-hero-image]');
-  const introDeadline = setTimeout(finishIntro, 1200);
-  const imageReady = heroImage && typeof heroImage.decode === 'function' ? heroImage.decode() : Promise.resolve();
-  imageReady.catch(() => {}).then(() => {
-    clearTimeout(introDeadline);
-    finishIntro();
-  });
-  window.addEventListener('pointerdown', finishIntro, { once: true, passive: true });
-  window.addEventListener('keydown', finishIntro, { once: true });
-  window.addEventListener('pageshow', (event) => { if (event.persisted) finishIntro(); });
 
   // Native dialog provides focus containment, an inert background and Escape support.
   if (menu && menuToggle && menuClose && typeof menu.showModal === 'function') {
@@ -41,7 +23,6 @@
       resetMenu();
     };
     menuToggle.addEventListener('click', () => {
-      finishIntro();
       menu.showModal();
       document.body.classList.add('menu-open');
       menuToggle.setAttribute('aria-expanded', 'true');
@@ -81,28 +62,6 @@
     framePending = true;
     requestAnimationFrame(updateHeader);
   }, { passive: true });
-
-  const revealItems = document.querySelectorAll('[data-reveal]');
-  let revealObserver;
-  const showAll = () => {
-    root.classList.remove('motion-ready');
-    revealObserver?.disconnect();
-  };
-  if ('IntersectionObserver' in window && !reducedMotion.matches) {
-    revealObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.classList.add('is-visible');
-        observer.unobserve(entry.target);
-      });
-    }, { rootMargin: '0px 0px -24px 0px', threshold: 0.05 });
-    revealItems.forEach((item) => revealObserver.observe(item));
-    root.classList.add('motion-ready');
-  }
-  reducedMotion.addEventListener('change', (event) => {
-    if (event.matches) { showAll(); finishIntro(); }
-  });
-  window.addEventListener('beforeprint', showAll);
 
   // Keep the mobile shortcut clear of the hero and full contact/footer area.
   if (mobileCall && hero && contact && footer && 'IntersectionObserver' in window) {
