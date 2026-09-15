@@ -6,7 +6,11 @@ The site presents the company’s core security services, specialist capabilitie
 
 ## Design system
 
-Charcoal, warm gold and ivory, with a narrow display cut (Nimbus Sans Narrow) for headings and Nimbus Sans for body copy. Tokens for surface, brand, text, line, motion and rhythm are declared once at the top of `styles.css`; every component reads from them, so the palette and spacing scale can be retuned in one place.
+Charcoal, warm gold and ivory, set in **Archivo** for body copy and **Archivo Narrow** for display (SIL OFL 1.1, `assets/fonts/OFL.txt`). Both ship as single variable files covering every weight the page uses — 53 KB of WOFF2 in place of the 246 KB of OpenType the site previously loaded, with the full weight range rather than two fixed cuts.
+
+Each webfont is paired with a fallback face that re-metrics Arial to Archivo's proportions (`size-adjust`, `ascent-override`, `descent-override`), so the swap when the webfont lands does not reflow the page. Those ratios were measured from rendered text rather than estimated.
+
+`styles.css` declares its layer order up front — `reset, base, layout, components, sections, motion, responsive` — so a rule's weight comes from where it lives rather than from selector specificity, and the reset sits at zero specificity behind `:where()`. Tokens for surface, brand, text, line, space and motion are declared once; rule colours are derived from the surface colours with `color-mix()` rather than re-picked by hand. Service cards are container queries: each card sizes its own typography from its own width, so the grid can be re-columned without re-tuning type at every breakpoint.
 
 The Caretaker lockup is an SVG-boxed `C.` monogram beside the wordmark, used in the header, footer and introduction. It is built from live text and a stroked SVG rect rather than a flattened image, which is what lets the introduction animate it.
 
@@ -16,7 +20,9 @@ The Caretaker lockup is an SVG-boxed `C.` monogram beside the wordmark, used in 
 
 The hero photography is unchanged (same `assets/caretaker-hero.webp` / `caretaker-hero-mobile.webp` files and responsive `<picture>` source-swap), presented full-bleed behind layered gradients as before.
 
-**Progressive enhancement.** Motion is opt-in: `script.js` adds `has-motion` only when the browser supports `IntersectionObserver` and the visitor has not asked for reduced motion, and every reveal rule is scoped to that class. With scripting blocked or motion reduced, all content renders at full opacity and the introduction never displays. The native `<dialog>` mobile menu keeps focus containment, Escape, an inert background and focus return.
+**Progressive enhancement.** Motion is opt-in: `script.js` adds `has-motion` only when the browser supports `IntersectionObserver` and the visitor has not asked for reduced motion, and every reveal rule is scoped to that class. With scripting blocked or motion reduced, all content renders at full opacity and the introduction never displays. The native `<dialog>` mobile menu keeps focus containment, Escape, an inert background and focus return. Switching the motion preference mid-visit tears the reveal system down and releases its listeners.
+
+`script.js` is organised as one module per behaviour behind a shared frame scheduler: every scroll-driven effect (header state, reading progress, hero parallax) registers a task and the scheduler reads `window.scrollY` once per frame, rather than each effect adding its own listener and its own read. Initialisation is idempotent, so a double include cannot double-bind.
 
 ## Run locally
 
@@ -39,7 +45,7 @@ Then open `http://localhost:8080`.
 
 - The hero is AI-generated illustrative photography, created for this website. It does not depict actual Caretaker personnel or premises, which the `alt` text states. Desktop and mobile WebP crops total approximately 109 KB.
 - Leadership uses names and roles from the existing site, without invented portraits.
-- Nimbus Sans and Nimbus Sans Narrow are distributed as unmodified OpenType files. Their copyright and licensing notices are included in `assets/FONT-LICENSE.txt`.
+- Archivo and Archivo Narrow (Omnibus-Type) are distributed as unmodified WOFF2 files under the SIL Open Font License 1.1. The licence is included at `assets/fonts/OFL.txt` and must travel with the fonts.
 - The source repository did not contain its referenced company-profile PDF. The profile action now opens an email request instead of a broken download.
 - Update the licence details when the stated 2026 validity period changes.
 - An inline SVG favicon, Open Graph/Twitter card tags, a canonical URL and `SecurityService` JSON-LD are in place. The canonical and social URLs point at the GitHub Pages address — change them if a custom domain is added. `robots.txt`, `sitemap.xml` and analytics are still not set up.

@@ -1,235 +1,327 @@
 /* =========================================================================
    Caretaker Security Services — behaviour
-   Progressive enhancement only: every section is readable, navigable and
-   contactable with this file blocked. Animation is opt-in and is skipped
-   entirely when the visitor asks for reduced motion.
+
+   Progressive enhancement only. With this file blocked every section is
+   readable, navigable and contactable; nothing here rescues content from a
+   hidden state, it only adds motion and the mobile dialog.
+
+   Structure: a frame scheduler that all scroll work shares, then one
+   self-contained module per behaviour. Modules return a teardown function
+   where they own resources worth releasing.
    ========================================================================= */
 (() => {
   'use strict';
 
   const root = document.documentElement;
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const supportsObserver = 'IntersectionObserver' in window;
-  const allowMotion = !reduceMotion.matches && supportsObserver;
+  // Re-running would double every listener; the flag makes init idempotent.
+  if (root.dataset.caretakerReady) return;
+  root.dataset.caretakerReady = 'true';
 
-  /* --- Animated introduction ------------------------------------------ */
-  // The <head> decided whether the intro runs; this only drives and ends it.
-  const introEl = document.querySelector('[data-intro]');
-  const INTRO_MIN_MS = 1700;   // let the logo sequence read before leaving
-  const INTRO_MAX_MS = 3200;   // never hold the page longer than this
+  const motionQuery = matchMedia('(prefers-reduced-motion: reduce)');
+  const desktopQuery = matchMedia('(min-width: 900px)');
+  const canObserve = 'IntersectionObserver' in window;
+  const allowMotion = () => !motionQuery.matches && canObserve;
 
-  const endIntro = () => {
-    if (!root.classList.contains('is-loading')) return;
-    clearTimeout(window.__introFallback);
-    try { sessionStorage.setItem('caretaker-intro', 'seen'); } catch (_) { /* optional */ }
-    introEl?.classList.add('is-done');
-    root.classList.remove('is-loading');
-    root.classList.add('is-ready');
+  const TIMING = {
+    introMin: 1700,      // let the logo sequence read before the curtain lifts
+    introMax: 3200,      // never hold the page longer than this
+    introExit: 180,
+    headerShadowAt: 24,  // px scrolled before the header gains its shadow
+    headerHideAt: 320,   // px scrolled before the header may retract
+    staggerStep: 80,
+    staggerMax: 400
   };
 
-  const runIntro = () => {
-    const fill = document.querySelector('[data-intro-fill]');
-    const count = document.querySelector('[data-intro-count]');
-    const heroImage = document.querySelector('[data-hero-image]');
-    const started = performance.now();
-    let progress = 0;
-    let settled = false;
+  const $ = (selector, scope = document) => scope.querySelector(selector);
+  const $$ = (selector, scope = document) => [...scope.querySelectorAll(selector)];
 
-    // Assets we would like finished before the curtain lifts.
-    const assets = Promise.all([
+  /* --- Frame scheduler --------------------------------------------------
+     Every scroll-driven effect reads window.scrollY once per frame here,
+     rather than each registering its own listener and its own read. */
+  const createScheduler = () => {
+    const tasks = new Set();
+    let queued = false;
+
+    const flush = () => {
+      queued = false;
+      const y = window.scrollY;
+      for (const task of tasks) task(y);
+    };
+
+    return {
+      add(task) {
+        tasks.add(task);
+        return () => tasks.delete(task);
+      },
+      request() {
+        if (queued) return;
+        queued = true;
+        requestAnimationFrame(flush);
+      }
+    };
+  };
+
+  const scheduler = createScheduler();
+
+  /* --- Animated introduction --------------------------------------------
+     The <head> already decided whether this runs (once per tab, never under
+     reduced motion) and armed a fallback timer. This drives the progress
+     readout and ends the sequence exactly once. */
+  const createIntro = () => {
+    const el = $('[data-intro]');
+    const fill = $('[data-intro-fill]');
+    const counter = $('[data-intro-count]');
+    const heroImage = $('[data-hero-image]');
+
+    let finished = false;
+
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      clearTimeout(window.__introFallback);
+      try {
+        sessionStorage.setItem('caretaker-intro', 'seen');
+      } catch (_) {
+        // Private browsing can refuse storage; the intro simply replays.
+      }
+      el?.classList.add('is-done');
+      root.classList.remove('is-loading');
+      root.classList.add('is-ready');
+    };
+
+    if (!root.classList.contains('is-loading')) {
+      root.classList.add('is-ready');
+      return { finish };
+    }
+
+    const startedAt = performance.now();
+    let shown = 0;
+    let assetsReady = false;
+
+    Promise.all([
       document.fonts ? document.fonts.ready.catch(() => {}) : Promise.resolve(),
-      heroImage && typeof heroImage.decode === 'function' ? heroImage.decode().catch(() => {}) : Promise.resolve()
-    ]);
-    assets.then(() => { settled = true; });
+      heroImage?.decode ? heroImage.decode().catch(() => {}) : Promise.resolve()
+    ]).then(() => { assetsReady = true; });
 
-    const tick = (now) => {
-      const elapsed = now - started;
-      // Ease toward 92% while loading, then complete once assets have settled.
-      const ceiling = settled && elapsed >= INTRO_MIN_MS ? 100 : 92;
-      progress += (ceiling - progress) * 0.06;
-      if (ceiling === 100 && progress > 99.4) progress = 100;
+    const step = (now) => {
+      const elapsed = now - startedAt;
+      // Ease toward 92% while loading, and only complete once the hero and
+      // fonts have settled, so the counter never lies about being done.
+      const target = assetsReady && elapsed >= TIMING.introMin ? 100 : 92;
+      shown += (target - shown) * 0.06;
+      if (target === 100 && shown > 99.4) shown = 100;
 
-      const shown = Math.round(progress);
-      if (fill) fill.style.width = shown + '%';
-      if (count) count.textContent = String(shown);
+      const value = Math.round(shown);
+      if (fill) fill.style.width = `${value}%`;
+      if (counter) counter.textContent = String(value);
 
-      if (progress >= 100 || elapsed >= INTRO_MAX_MS) {
+      if (shown >= 100 || elapsed >= TIMING.introMax) {
         if (fill) fill.style.width = '100%';
-        if (count) count.textContent = '100';
-        setTimeout(endIntro, 180);
+        if (counter) counter.textContent = '100';
+        setTimeout(finish, TIMING.introExit);
         return;
       }
-      requestAnimationFrame(tick);
+      requestAnimationFrame(step);
     };
-    requestAnimationFrame(tick);
+    requestAnimationFrame(step);
 
-    // Let an impatient visitor dismiss the intro immediately.
-    window.addEventListener('pointerdown', endIntro, { once: true, passive: true });
-    window.addEventListener('keydown', endIntro, { once: true });
+    // An impatient visitor should never have to wait out the animation.
+    addEventListener('pointerdown', finish, { once: true, passive: true });
+    addEventListener('keydown', finish, { once: true });
+
+    return { finish };
   };
 
-  if (root.classList.contains('is-loading')) {
-    runIntro();
-  } else {
-    root.classList.add('is-ready');
-  }
-  // Restoring from the back/forward cache must never show a stale curtain.
-  window.addEventListener('pageshow', (event) => { if (event.persisted) endIntro(); });
+  const intro = createIntro();
+  // A page restored from the back/forward cache must not show a stale curtain.
+  addEventListener('pageshow', (event) => { if (event.persisted) intro.finish(); });
 
-  /* --- Scroll reveals -------------------------------------------------- */
-  if (allowMotion) {
+  /* --- Scroll reveals ---------------------------------------------------- */
+  const createReveals = () => {
+    if (!allowMotion()) return null;
+
     root.classList.add('has-motion');
 
-    // Children of a [data-stagger] group enter in sequence rather than together.
-    document.querySelectorAll('[data-stagger]').forEach((group) => {
-      group.querySelectorAll(':scope > [data-reveal]').forEach((item, index) => {
-        item.style.setProperty('--d', Math.min(index * 80, 400) + 'ms');
+    // Items inside a [data-stagger] group enter in sequence, driven by their
+    // position in the markup rather than a hand-written delay per element.
+    for (const group of $$('[data-stagger]')) {
+      $$(':scope > [data-reveal]', group).forEach((item, index) => {
+        item.style.setProperty('--d', `${Math.min(index * TIMING.staggerStep, TIMING.staggerMax)}ms`);
       });
-    });
+    }
 
-    const revealObserver = new IntersectionObserver((entries, observer) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
+    const targets = $$('[data-reveal], [data-reveal-lines]');
+    const observer = new IntersectionObserver((entries, self) => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting) continue;
         entry.target.classList.add('is-inview');
-        observer.unobserve(entry.target);
-      });
+        self.unobserve(entry.target);
+      }
     }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
 
-    document.querySelectorAll('[data-reveal], [data-reveal-lines]').forEach((item) => revealObserver.observe(item));
+    targets.forEach((target) => observer.observe(target));
 
-    // If the visitor switches motion preference mid-visit, show everything.
-    reduceMotion.addEventListener('change', (event) => {
-      if (!event.matches) return;
-      revealObserver.disconnect();
-      root.classList.remove('has-motion');
-      endIntro();
-    });
-    window.addEventListener('beforeprint', () => {
-      document.querySelectorAll('[data-reveal], [data-reveal-lines]').forEach((item) => item.classList.add('is-inview'));
-    });
-  }
+    const showAll = () => targets.forEach((target) => target.classList.add('is-inview'));
+    const controller = new AbortController();
+    addEventListener('beforeprint', showAll, { signal: controller.signal });
 
-  /* --- Header, progress and parallax on one frame loop ------------------ */
-  const header = document.querySelector('[data-header]');
-  const parallaxEl = document.querySelector('[data-parallax]');
-  const parallaxFactor = parallaxEl ? parseFloat(parallaxEl.dataset.parallax) || 0 : 0;
-  const hero = document.querySelector('.hero');
-
-  let scrollRange = 1;
-  let lastY = window.scrollY;
-  let frameQueued = false;
-  let heroVisible = true;
-
-  const measure = () => {
-    scrollRange = Math.max(document.documentElement.scrollHeight - window.innerHeight, 1);
+    return {
+      teardown() {
+        observer.disconnect();
+        controller.abort();
+        root.classList.remove('has-motion');
+      }
+    };
   };
 
-  const render = () => {
-    frameQueued = false;
-    const y = window.scrollY;
+  let reveals = createReveals();
+
+  // Switching the preference mid-visit should take effect immediately.
+  motionQuery.addEventListener('change', () => {
+    if (motionQuery.matches) {
+      reveals?.teardown();
+      reveals = null;
+      intro.finish();
+    } else if (!reveals) {
+      reveals = createReveals();
+    }
+  });
+
+  /* --- Header state, reading progress and hero parallax ------------------
+     Three effects, one frame task each, all fed by the shared scheduler. */
+  const createScrollEffects = () => {
+    const header = $('[data-header]');
+    const parallaxEl = $('[data-parallax]');
+    const hero = $('.hero');
+    const parallaxFactor = Number(parallaxEl?.dataset.parallax) || 0;
+
+    let scrollRange = 1;
+    let previousY = window.scrollY;
+    let heroOnScreen = true;
+
+    const measure = () => {
+      scrollRange = Math.max(root.scrollHeight - window.innerHeight, 1);
+    };
 
     if (header) {
-      header.classList.toggle('is-scrolled', y > 24);
-      header.style.setProperty('--progress', String(Math.min(y / scrollRange, 1)));
-      // Reclaim vertical space while reading downward, return the header on the way up.
-      const hide = y > 320 && y > lastY && !document.body.classList.contains('menu-open');
-      header.classList.toggle('is-hidden', hide);
+      scheduler.add((y) => {
+        header.classList.toggle('is-scrolled', y > TIMING.headerShadowAt);
+        header.style.setProperty('--progress', String(Math.min(y / scrollRange, 1)));
+        // Give the reading area back on the way down, return on the way up.
+        const retract = y > TIMING.headerHideAt && y > previousY &&
+          !document.body.classList.contains('menu-open');
+        header.classList.toggle('is-hidden', retract);
+      });
     }
 
-    if (parallaxEl && allowMotion && heroVisible) {
-      parallaxEl.style.transform = 'translate3d(0,' + (y * parallaxFactor).toFixed(2) + 'px,0)';
+    if (parallaxEl && parallaxFactor) {
+      scheduler.add((y) => {
+        if (!heroOnScreen || !root.classList.contains('has-motion')) return;
+        parallaxEl.style.transform = `translate3d(0,${(y * parallaxFactor).toFixed(2)}px,0)`;
+      });
     }
 
-    lastY = y;
+    // previousY must update after every task has compared against it.
+    scheduler.add((y) => { previousY = y; });
+
+    measure();
+    scheduler.request();
+
+    addEventListener('scroll', () => scheduler.request(), { passive: true });
+    addEventListener('resize', () => { measure(); scheduler.request(); }, { passive: true });
+    addEventListener('load', measure);
+
+    // Parallax has nothing to say once the hero has left the viewport.
+    if (hero && canObserve) {
+      new IntersectionObserver(([entry]) => { heroOnScreen = entry.isIntersecting; },
+        { rootMargin: '120px' }).observe(hero);
+    }
   };
 
-  const onScroll = () => {
-    if (frameQueued) return;
-    frameQueued = true;
-    requestAnimationFrame(render);
-  };
+  createScrollEffects();
 
-  measure();
-  render();
-  window.addEventListener('scroll', onScroll, { passive: true });
-  window.addEventListener('resize', () => { measure(); onScroll(); }, { passive: true });
-  window.addEventListener('load', measure);
+  /* --- Mobile navigation -------------------------------------------------
+     A native <dialog> supplies focus containment, an inert background,
+     Escape handling and focus return; none of that is reimplemented here. */
+  const createNav = () => {
+    const menu = $('#mobile-menu');
+    const toggle = $('[data-menu-toggle]');
+    const close = $('[data-menu-close]');
+    if (!menu || !toggle || !close || typeof menu.showModal !== 'function') return;
 
-  // Parallax only needs to run while the hero is actually on screen.
-  if (hero && supportsObserver) {
-    new IntersectionObserver((entries) => {
-      heroVisible = entries[0].isIntersecting;
-    }, { rootMargin: '120px' }).observe(hero);
-  }
-
-  /* --- Mobile navigation ----------------------------------------------- */
-  const menu = document.querySelector('#mobile-menu');
-  const menuToggle = document.querySelector('[data-menu-toggle]');
-  const menuClose = document.querySelector('[data-menu-close]');
-
-  // The native dialog gives focus containment, an inert background and Escape.
-  if (menu && menuToggle && menuClose && typeof menu.showModal === 'function') {
     root.classList.add('nav-enhanced');
-    menuToggle.hidden = false;
+    toggle.hidden = false;
 
-    const resetMenu = () => {
+    const reset = () => {
       document.body.classList.remove('menu-open');
-      menuToggle.setAttribute('aria-expanded', 'false');
+      toggle.setAttribute('aria-expanded', 'false');
     };
     const closeMenu = () => {
       if (menu.open) menu.close();
-      resetMenu();
+      reset();
     };
 
-    menuToggle.addEventListener('click', () => {
-      endIntro();
+    toggle.addEventListener('click', () => {
+      intro.finish();
       menu.showModal();
       document.body.classList.add('menu-open');
-      menuToggle.setAttribute('aria-expanded', 'true');
+      toggle.setAttribute('aria-expanded', 'true');
     });
-    menuClose.addEventListener('click', closeMenu);
-    menu.addEventListener('close', resetMenu);
-    menu.addEventListener('cancel', resetMenu);
+    close.addEventListener('click', closeMenu);
+    menu.addEventListener('close', reset);
+    menu.addEventListener('cancel', reset);
+
+    // A click landing outside the dialog's own box is a click on the backdrop.
     menu.addEventListener('click', (event) => {
       if (event.target !== menu) return;
-      const bounds = menu.getBoundingClientRect();
-      if (event.clientX < bounds.left || event.clientX > bounds.right ||
-          event.clientY < bounds.top || event.clientY > bounds.bottom) closeMenu();
+      const box = menu.getBoundingClientRect();
+      const outside = event.clientX < box.left || event.clientX > box.right ||
+        event.clientY < box.top || event.clientY > box.bottom;
+      if (outside) closeMenu();
     });
 
-    // Closing on navigation keeps focus with the section the visitor chose.
-    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => {
-      closeMenu();
-      const href = link.getAttribute('href');
-      if (!href || !href.startsWith('#')) return;
-      const target = document.querySelector(href);
-      if (!target) return;
-      target.setAttribute('tabindex', '-1');
-      target.focus({ preventScroll: true });
-      target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
-    }));
+    for (const link of $$('a', menu)) {
+      link.addEventListener('click', () => {
+        closeMenu();
+        const href = link.getAttribute('href');
+        if (!href?.startsWith('#')) return;
+        const target = $(href);
+        if (!target) return;
+        // Move focus to the chosen section so the keyboard follows the eye.
+        target.setAttribute('tabindex', '-1');
+        target.focus({ preventScroll: true });
+        target.addEventListener('blur', () => target.removeAttribute('tabindex'), { once: true });
+      });
+    }
 
-    const desktop = window.matchMedia('(min-width: 900px)');
-    desktop.addEventListener('change', (event) => { if (event.matches) closeMenu(); });
-    window.addEventListener('pagehide', closeMenu);
-  }
+    desktopQuery.addEventListener('change', (event) => { if (event.matches) closeMenu(); });
+    addEventListener('pagehide', closeMenu);
+  };
 
-  /* --- Mobile call shortcut -------------------------------------------- */
-  // Shown only in the stretch between the hero and the contact details.
-  const mobileCall = document.querySelector('.mobile-call');
-  const contact = document.querySelector('#contact');
-  const footer = document.querySelector('.site-footer');
+  createNav();
 
-  if (mobileCall && hero && contact && footer && supportsObserver) {
-    const visibility = new Map([[hero, true], [contact, false], [footer, false]]);
-    const callObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => visibility.set(entry.target, entry.isIntersecting));
-      mobileCall.classList.toggle('is-visible', [...visibility.values()].every((visible) => !visible));
+  /* --- Mobile call shortcut ----------------------------------------------
+     Visible only in the stretch between the hero and the contact details,
+     where no phone number is already on screen. */
+  const createCallShortcut = () => {
+    const shortcut = $('.mobile-call');
+    const hero = $('.hero');
+    const contact = $('#contact');
+    const footer = $('.site-footer');
+    if (!shortcut || !hero || !contact || !footer || !canObserve) return;
+
+    const onScreen = new Map([[hero, true], [contact, false], [footer, false]]);
+    const observer = new IntersectionObserver((entries) => {
+      for (const entry of entries) onScreen.set(entry.target, entry.isIntersecting);
+      const anchorVisible = [...onScreen.values()].some(Boolean);
+      shortcut.classList.toggle('is-visible', !anchorVisible);
     });
-    visibility.forEach((_, element) => callObserver.observe(element));
-  }
+    for (const section of onScreen.keys()) observer.observe(section);
+  };
 
-  /* --- Footer year ------------------------------------------------------ */
-  const year = document.querySelector('[data-year]');
+  createCallShortcut();
+
+  /* --- Footer year -------------------------------------------------------- */
+  const year = $('[data-year]');
   if (year) year.textContent = String(new Date().getFullYear());
 })();
