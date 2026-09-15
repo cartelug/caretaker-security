@@ -134,7 +134,7 @@
 }
 
 @layer base{
-  html{scroll-behavior:smooth;scroll-padding-top:104px;background:var(--ink);-webkit-text-size-adjust:100%}
+  html{scroll-behavior:smooth;scroll-padding-top:128px;background:var(--ink);-webkit-text-size-adjust:100%}
   html.is-loading{overflow:hidden}
   body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--font-body);font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;overflow-x:hidden}
   body.menu-open{overflow:hidden}
@@ -209,18 +209,12 @@
 
   /* Brand lockup — shared by header, footer and the introduction. */
   .brand{display:inline-flex;align-items:center;gap:var(--s3);flex-shrink:0}
-  /* Segmented shield: four strokes that together read as a shield outline,
-     each one drawable on its own for the introduction. */
-  .shield{width:100%;height:100%;overflow:visible}
-  .shield g{fill:none;stroke:currentColor;stroke-width:13;stroke-linecap:butt;vector-effect:non-scaling-stroke}
-  /* The horizontal lockup — shield plus wordmark — taken from the company
-     profile artwork. Height-driven so it stays put as the header shrinks. */
-  .brand__logo{height:clamp(34px,3.4vw,46px);width:auto;transition:opacity var(--dur-fast)}
+  /* The original stacked lockup, used exactly as drawn — no re-set wordmark,
+     no reconstruction. Height-driven so it holds its proportion as the header
+     changes size, and the header is sized around it rather than the reverse,
+     so the line under the wordmark stays readable. */
+  .brand__logo{height:clamp(56px,5.6vw,82px);width:auto;transition:opacity var(--dur-fast)}
   .brand:hover .brand__logo{opacity:.82}
-  .brand__mark{position:relative;display:block;width:34px;height:41px;flex-shrink:0;color:var(--gold)}
-  .brand__type{font-family:var(--font-display);font-size:23px;font-stretch:var(--display-stretch);text-transform:uppercase;line-height:1;letter-spacing:.055em;font-weight:700}
-  .brand__type small{display:block;font-family:var(--font-body);font-size:7px;font-weight:500;letter-spacing:.2em;line-height:1.4;margin-top:6px;color:var(--paper-faint);font-stretch:normal}
-  .brand:hover .brand__mark{color:var(--gold-bright)}
 }
 
 @layer sections{
@@ -295,7 +289,7 @@
   .site-header.is-scrolled{box-shadow:0 10px 34px rgb(0 0 0 / .28)}
   .site-header.is-hidden{transform:translateY(-101%)}
   .site-header__progress{position:absolute;left:0;bottom:-1px;height:2px;width:100%;background:linear-gradient(90deg,var(--gold),var(--gold-bright));transform:scaleX(var(--progress,0));transform-origin:left}
-  .header-inner{min-height:92px;display:flex;align-items:center;justify-content:space-between;gap:var(--s7)}
+  .header-inner{min-height:116px;display:flex;align-items:center;justify-content:space-between;gap:var(--s7)}
   .desktop-nav{display:flex;gap:30px;align-items:center}
   .desktop-nav a{position:relative;padding-block:var(--s3);font-size:var(--text-md);color:#d2d6ce;transition:color var(--dur-fast)}
   .desktop-nav a::after{content:'';position:absolute;left:0;right:0;bottom:7px;height:1px;background:var(--gold);transform:scaleX(0);transform-origin:right;transition:transform var(--dur-mid) var(--ease)}
@@ -314,8 +308,9 @@
   .is-ready .hero__image img{transform:scale(1)}
   /* Feather the photograph into the dark field instead of butting it up. */
   .hero::after{content:'';position:absolute;inset:0;z-index:-1;background:
-    linear-gradient(90deg,var(--ink) 0%,var(--ink) 40%,rgb(18 22 19 / .72) 54%,rgb(18 22 19 / .12) 70%,transparent 86%),
-    linear-gradient(0deg,rgb(10 14 11 / .72),transparent 42%)}
+    linear-gradient(90deg,var(--ink) 0%,var(--ink) 44%,rgb(18 22 19 / .88) 58%,rgb(18 22 19 / .55) 72%,rgb(18 22 19 / .3) 86%,rgb(18 22 19 / .18) 100%),
+    linear-gradient(0deg,rgb(10 14 11 / .9) 0%,rgb(10 14 11 / .55) 22%,transparent 52%),
+    linear-gradient(180deg,rgb(10 14 11 / .5) 0%,transparent 26%)}
   .hero__content{position:relative;padding-block:84px 120px}
   .hero__eyebrow{color:var(--gold);display:flex;align-items:center;gap:var(--s3);font-size:var(--text-xs)}
   .hero__eyebrow::before{content:'';width:0;height:1px;background:currentColor;transition:width var(--dur-slow) var(--ease) .2s}
@@ -524,9 +519,12 @@
   @keyframes cue{0%{transform:translateY(-100%)}55%{transform:translateY(0)}100%{transform:translateY(100%)}}
 
   /* Marquee: the service list as a moving band between hero and page. */
-  .marquee{position:relative;z-index:2;overflow:hidden;background:var(--ink-deep);border-block:1px solid var(--line-light);padding-block:15px;
-    -webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);
-    mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}
+  .marquee{position:relative;z-index:2;overflow:hidden;background:var(--ink-deep);border-block:1px solid var(--line-light);padding-block:15px}
+  /* Fade the ends into the band's own colour rather than masking the element:
+     a mask takes the background with it and lets the ivory page show through. */
+  .marquee::before,.marquee::after{content:'';position:absolute;top:0;bottom:0;width:11%;z-index:1;pointer-events:none}
+  .marquee::before{left:0;background:linear-gradient(90deg,var(--ink-deep) 15%,transparent)}
+  .marquee::after{right:0;background:linear-gradient(270deg,var(--ink-deep) 15%,transparent)}
   .marquee__track{display:flex;align-items:center;gap:var(--s7);width:max-content;animation:marquee 46s linear infinite}
   .marquee span{font-family:var(--font-display);font-stretch:var(--display-stretch);font-size:15px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:color-mix(in srgb,var(--white) 62%,transparent);white-space:nowrap}
   .marquee b{flex-shrink:0;width:7px;height:7px;rotate:45deg;background:var(--gold)}
@@ -651,11 +649,9 @@
     .field-item,.field-item--lead,.field-item--wide,.field-item--tall{grid-column:span 1}
   }
   @media(max-width:899px){
-    html{scroll-padding-top:86px}
-    .header-inner{min-height:78px;flex-wrap:wrap}
-    .brand__type{font-size:26px}
-    .brand__mark{width:40px;height:40px}
-    .brand__mark b{font-size:27px}
+    html{scroll-padding-top:100px}
+    .header-inner{min-height:92px;flex-wrap:wrap}
+    .brand__logo{height:58px}
     .desktop-nav{width:100%;justify-content:space-between;gap:var(--s4);padding-bottom:5px}
     .nav-enhanced .desktop-nav{display:none}
     .nav-enhanced .menu-toggle{display:flex;align-items:center;gap:var(--s3);min-width:82px;min-height:44px;padding:0;font-size:var(--text-sm);justify-content:flex-end}
@@ -733,24 +729,26 @@
   }
   @media(max-width:699px){
     :root{--space:72px;--gutter:20px}
-    html{scroll-padding-top:82px}
+    html{scroll-padding-top:86px}
     .utility-bar__inner{min-height:32px;gap:10px;font-size:var(--text-2xs)}
     .utility-bar a{min-height:32px;gap:10px}
     .utility-bar__licence{display:none}
-    .header-inner{min-height:72px}
+    .header-inner{min-height:78px}
+    .brand__logo{height:50px}
     .brand{gap:9px}
-    .brand__mark{width:36px;height:36px}
-    .brand__mark b{font-size:24px}
-    .brand__mark b i{font-size:19px}
-    .brand__type{font-size:25px}
-    .brand__type small{font-size:6px;letter-spacing:.15em}
     .intro__mark{width:78px;height:78px}
     .intro__glyph{font-size:50px}
     .intro__word{font-size:27px;margin-top:var(--s5)}
     .hero{min-height:680px;align-items:flex-end}
     .hero__image{inset:0;width:100%}
     .hero__image img{object-position:center 8%}
-    .hero::after{background:linear-gradient(0deg,rgb(11 15 12 / .97) 4%,rgb(11 15 12 / .84) 34%,rgb(11 15 12 / .3) 62%,rgb(11 15 12 / .08))}
+    /* The phone hero is full bleed, so the scrim is cut to the copy: it holds
+       near-opaque across the text block (0-64% up from the base, where the
+       eyebrow's rule and icon sit) and only then opens onto the officer. Stops
+       were set from measured contrast, not by eye. */
+    .hero::after{background:
+      linear-gradient(0deg,rgb(10 14 11 / .97) 0%,rgb(10 14 11 / .95) 34%,rgb(10 14 11 / .93) 52%,rgb(10 15 11 / .88) 64%,rgb(11 16 12 / .62) 76%,rgb(11 16 12 / .36) 88%,rgb(11 16 12 / .24) 100%),
+      linear-gradient(180deg,rgb(10 14 11 / .55) 0%,rgb(10 14 11 / .18) 12%,transparent 26%)}
     .hero__content{padding-block:220px 70px}
     .hero__eyebrow{font-size:8px;gap:var(--s2)}
     .is-ready .hero__eyebrow::before{width:17px}
@@ -813,7 +811,6 @@
     .contact-details .eyebrow{font-size:8px;margin-bottom:var(--s3)}
     .site-footer{padding:38px 0 46px}
     .footer-top{gap:var(--s4);flex-wrap:wrap}
-    .footer-top .brand__type{font-size:23px}
     .back-top{font-size:0;gap:0;margin-left:auto;min-width:44px;justify-content:flex-end}
     .back-top span{font-size:20px;width:36px;height:36px}
     .footer-nav{display:grid;grid-template-columns:repeat(2,1fr);column-gap:var(--s6);row-gap:0;margin-top:var(--s6)}
@@ -838,7 +835,6 @@
     .hero__eyebrow{font-size:7px}
     .contact-details{grid-template-columns:1fr}
     .service-card{padding:23px var(--s5)}
-    .brand__type{font-size:22px}
   }
 
   /* Motion is a preference, not a capability: honour it above all layers. */

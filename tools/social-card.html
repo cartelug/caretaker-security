@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Caretaker share card</title>
+<style>
+  @font-face{
+    font-family:'Archivo Variable';font-style:normal;font-weight:100 900;
+    src:url('../assets/fonts/archivo-latin-wght-normal.woff2') format('woff2-variations');
+  }
+  @font-face{
+    font-family:'Saira Variable';font-style:normal;font-weight:100 900;font-stretch:50% 125%;
+    src:url('../assets/fonts/saira-latin-standard-normal.woff2') format('woff2-variations');
+  }
+  :root{--ink:#121613;--white:#fffefa;--gold:#c9a75f;--gold-brand:#9c8442;--stretch:112%}
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1200px;height:630px}
+  body{background:var(--ink);font-family:'Archivo Variable',Arial,sans-serif;overflow:hidden}
+
+  .card{position:relative;width:1200px;height:630px;overflow:hidden;isolation:isolate}
+
+  .card__photo{position:absolute;inset:0 0 0 auto;width:54%;z-index:-2}
+  .card__photo img{width:100%;height:100%;object-fit:cover;object-position:center 14%;display:block}
+
+  /* Same feathering language as the desktop hero: the dark field carries the
+     brand, the photograph resolves out of it rather than butting against it. */
+  .card__scrim{position:absolute;inset:0;z-index:-1;background:
+    linear-gradient(90deg,var(--ink) 0%,var(--ink) 41%,rgb(18 22 19 / .88) 53%,rgb(18 22 19 / .42) 68%,rgb(18 22 19 / .12) 84%,rgb(18 22 19 / .04) 100%),
+    linear-gradient(0deg,rgb(10 14 11 / .62) 0%,rgb(10 14 11 / .2) 22%,transparent 46%)}
+
+  .card__body{position:relative;height:100%;padding:62px 64px 58px;display:flex;flex-direction:column;justify-content:space-between;max-width:700px}
+
+  .card__logo{height:168px;width:auto;display:block}
+
+  .card__line{width:62px;height:2px;background:var(--gold);margin:34px 0 22px}
+
+  h1{font-family:'Saira Variable',Arial,sans-serif;font-weight:700;font-stretch:var(--stretch);
+     font-size:76px;line-height:.92;letter-spacing:-.03em;color:var(--white)}
+  h1 em{font-style:normal;color:var(--gold)}
+
+  p{margin-top:20px;font-size:23px;line-height:1.5;color:#dfe4d9;max-width:520px;font-weight:400}
+
+  .card__foot{display:flex;align-items:center;gap:20px;
+    font-size:14px;letter-spacing:.19em;text-transform:uppercase;color:#c3cbbc;font-weight:600}
+  .card__foot i{display:block;width:7px;height:7px;background:var(--gold);transform:rotate(45deg)}
+
+  /* tactical corner brackets, as on the hero */
+  .card__frame{position:absolute;inset:26px;z-index:2;pointer-events:none}
+  .card__frame i{position:absolute;width:30px;height:30px;border:1px solid rgb(201 167 95 / .55)}
+  .card__frame i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0}
+  .card__frame i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0}
+  .card__frame i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0}
+  .card__frame i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="card__photo">
+    <img src="../assets/hero-officer.webp" alt="">
+  </div>
+  <div class="card__scrim"></div>
+  <div class="card__frame"><i></i><i></i><i></i><i></i></div>
+  <div class="card__body">
+    <div>
+      <img class="card__logo" src="../assets/brand/caretaker-logo-stacked-dark.webp" alt="Caretaker Security Services Limited">
+      <div class="card__line"></div>
+      <h1>Protection<br>that <em>holds.</em></h1>
+      <p>Licensed guarding, 24/7 monitoring and rapid response across Uganda.</p>
+    </div>
+    <div class="card__foot"><span>Kampala, Uganda</span><i></i><span>People. Presence. Protection.</span></div>
+  </div>
+</div>
+</body>
+</html>
