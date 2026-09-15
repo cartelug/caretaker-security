@@ -321,6 +321,60 @@
 
   createCallShortcut();
 
+  /* --- Pointer-tracked light and magnetic buttons ------------------------
+     Both are pure decoration on a fine pointer. Touch and keyboard users get
+     the static design, which is why neither is required for anything. */
+  const createPointerEffects = () => {
+    if (!allowMotion() || !matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+
+    const lit = [$('.hero'), $('#contact')].filter(Boolean);
+    if (lit.length && canObserve) {
+      const litObserver = new IntersectionObserver((entries) => {
+        for (const entry of entries) entry.target.classList.toggle('is-lit', entry.isIntersecting);
+      }, { rootMargin: '0px' });
+      lit.forEach((section) => litObserver.observe(section));
+
+      let pointerFrame = false;
+      let px = 0;
+      let py = 0;
+      addEventListener('pointermove', (event) => {
+        px = event.clientX;
+        py = event.clientY;
+        if (pointerFrame) return;
+        pointerFrame = true;
+        requestAnimationFrame(() => {
+          pointerFrame = false;
+          for (const section of lit) {
+            if (!section.classList.contains('is-lit') && section !== lit[0]) continue;
+            const box = section.getBoundingClientRect();
+            if (box.bottom < 0 || box.top > innerHeight) continue;
+            section.style.setProperty('--px', `${((px - box.left) / box.width) * 100}%`);
+            section.style.setProperty('--py', `${((py - box.top) / box.height) * 100}%`);
+          }
+        });
+      }, { passive: true });
+    }
+
+    // Magnetic pull: the button follows the cursor a little way, then releases.
+    const PULL = 0.22;
+    const MAX = 7;
+    for (const button of $$('.button')) {
+      button.addEventListener('pointermove', (event) => {
+        const box = button.getBoundingClientRect();
+        const dx = (event.clientX - (box.left + box.width / 2)) * PULL;
+        const dy = (event.clientY - (box.top + box.height / 2)) * PULL;
+        button.style.setProperty('--mx', `${Math.max(-MAX, Math.min(MAX, dx)).toFixed(1)}px`);
+        button.style.setProperty('--my', `${Math.max(-MAX, Math.min(MAX, dy)).toFixed(1)}px`);
+      });
+      button.addEventListener('pointerleave', () => {
+        button.style.removeProperty('--mx');
+        button.style.removeProperty('--my');
+      });
+    }
+  };
+
+  createPointerEffects();
+
   /* --- Footer year -------------------------------------------------------- */
   const year = $('[data-year]');
   if (year) year.textContent = String(new Date().getFullYear());

@@ -443,6 +443,88 @@
   .mobile-call{display:none}
 }
 
+@layer sections{
+  /* ---------------------------------------------------------------------
+     Atmosphere and detail
+     Layered light, tactical framing and the brand's gold given depth, so
+     the page reads as lit rather than flat-filled.
+     ------------------------------------------------------------------ */
+
+  /* Metallic gold: display accents get a brushed gradient rather than a
+     flat fill. Falls back to the solid colour where clipping is missing. */
+  h1 em,h2 em,.operations-console>strong em{
+    background:linear-gradient(96deg,var(--gold-deep) 0%,var(--gold) 26%,var(--gold-bright) 47%,var(--gold) 68%,var(--gold-deep) 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    background-size:220% 100%;background-position:12% 0}
+  /* These three carry their own gold from the section rules above, so the
+     clip has to be restated here at matching specificity to win. */
+  .contact h2 em,.hero h1 em,.operations-console>strong em{
+    background-image:linear-gradient(96deg,#b08f4a 0%,var(--gold) 24%,#f4e2b4 48%,var(--gold) 72%,#b08f4a 100%);
+    background-size:220% 100%;background-position:12% 0;
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  @supports not ((-webkit-background-clip:text) or (background-clip:text)){
+    h1 em,h2 em{background:none;color:var(--gold-deep)}
+    .contact h2 em,.hero h1 em,.operations-console>strong em{background:none;color:var(--gold)}
+  }
+
+  /* Pointer-tracked light on the dark sections. The coordinates come from
+     script.js; with no pointer (touch, no JS) the glow simply never moves. */
+  .hero::before,.contact::before{content:'';position:absolute;inset:0;z-index:0;pointer-events:none;
+    background:radial-gradient(38rem 38rem at var(--px,70%) var(--py,30%),color-mix(in srgb,var(--gold) 13%,transparent),transparent 62%);
+    opacity:0;transition:opacity .8s var(--ease-soft)}
+  .is-ready .hero::before{opacity:1}
+  .contact.is-lit::before{opacity:1}
+  .hero__content,.contact .shell{position:relative;z-index:1}
+
+  /* Tactical corner brackets framing the hero. */
+  .hero__frame{position:absolute;inset:clamp(14px,2.4vw,28px);z-index:1;pointer-events:none}
+  .hero__frame i{position:absolute;width:26px;height:26px;border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);opacity:0;transition:opacity .9s var(--ease) .5s,transform .9s var(--ease) .5s}
+  .hero__frame i:nth-child(1){top:0;left:0;border-right:0;border-bottom:0;transform:translate(-8px,-8px)}
+  .hero__frame i:nth-child(2){top:0;right:0;border-left:0;border-bottom:0;transform:translate(8px,-8px)}
+  .hero__frame i:nth-child(3){bottom:0;left:0;border-right:0;border-top:0;transform:translate(-8px,8px)}
+  .hero__frame i:nth-child(4){bottom:0;right:0;border-left:0;border-top:0;transform:translate(8px,8px)}
+  .is-ready .hero__frame i{opacity:1;transform:none}
+
+  /* Scroll cue: a gold filament that drains and refills. */
+  .hero__cue{position:absolute;left:50%;bottom:58px;z-index:2;translate:-50% 0;width:22px;height:46px;display:grid;place-items:center}
+  .hero__cue span{position:relative;display:block;width:1px;height:100%;background:color-mix(in srgb,var(--white) 22%,transparent);overflow:hidden}
+  .hero__cue span::after{content:'';position:absolute;inset:0;background:var(--gold);transform:translateY(-100%);animation:cue 2.4s var(--ease-soft) infinite}
+  @keyframes cue{0%{transform:translateY(-100%)}55%{transform:translateY(0)}100%{transform:translateY(100%)}}
+
+  /* Marquee: the service list as a moving band between hero and page. */
+  .marquee{position:relative;z-index:2;overflow:hidden;background:var(--ink-deep);border-block:1px solid var(--line-light);padding-block:15px;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 9%,#000 91%,transparent)}
+  .marquee__track{display:flex;align-items:center;gap:var(--s7);width:max-content;animation:marquee 46s linear infinite}
+  .marquee span{font-family:var(--font-display);font-stretch:var(--display-stretch);font-size:15px;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:color-mix(in srgb,var(--white) 62%,transparent);white-space:nowrap}
+  .marquee b{flex-shrink:0;width:7px;height:7px;rotate:45deg;background:var(--gold)}
+  .marquee:hover .marquee__track{animation-play-state:paused}
+  @keyframes marquee{to{transform:translateX(-50%)}}
+
+  /* Oversized index numeral behind each service card, generated rather than
+     written into the markup so the order can never drift out of sync. */
+  .service-grid{counter-reset:svc}
+  .service-card{counter-increment:svc}
+  .service-card::after{content:counter(svc,decimal-leading-zero);position:absolute;right:14px;bottom:4px;z-index:0;
+    font-family:var(--font-display);font-stretch:var(--display-stretch);font-size:96px;font-weight:700;line-height:1;
+    color:color-mix(in srgb,var(--ink) 5%,transparent);pointer-events:none;transition:color .5s var(--ease)}
+  .service-card:hover::after{color:color-mix(in srgb,var(--gold-brand) 16%,transparent)}
+  .service-card>*{position:relative;z-index:1}
+
+  /* Control-room radar. */
+  .radar{position:absolute;top:var(--s7);right:var(--s7);width:104px;height:104px;opacity:.5}
+  .radar circle,.radar path{stroke:var(--gold);stroke-width:.8;fill:none;opacity:.42}
+  .radar__sweep{transform-origin:60px 60px;animation:radar-spin 4.6s linear infinite}
+  .radar__sweep path{fill:color-mix(in srgb,var(--gold) 20%,transparent);stroke:none;opacity:1}
+  .radar__blip{fill:var(--gold);stroke:none;opacity:0;animation:blip 4.6s ease-out infinite}
+  .radar__blip--b{animation-delay:2.3s}
+  @keyframes radar-spin{to{rotate:360deg}}
+  @keyframes blip{0%,4%{opacity:1}45%,100%{opacity:0}}
+
+  /* Buttons lean toward the pointer, driven by script.js. */
+  .button{translate:var(--mx,0) var(--my,0)}
+}
+
 @layer motion{
   /* Opt-in only: script.js adds .has-motion when the observers exist and the
      visitor has not asked for reduced motion. Without it nothing here

@@ -150,6 +150,7 @@
       <img src="assets/caretaker-hero.webp" alt="Illustrative image of a security professional outside a commercial property at dawn" width="1586" height="992" fetchpriority="high" decoding="async" data-hero-image>
     </picture>
   </div>
+  <div class="hero__frame" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
   <div class="shell hero__content">
     <p class="eyebrow hero__eyebrow" data-hero-item>Always alert. Always accountable.</p>
     <h1 id="hero-title">
@@ -163,7 +164,15 @@
     </div>
   </div>
   <div class="hero__caption" data-hero-item><span>People. Presence. Protection.</span><span>Uganda / Nationwide</span></div>
+  <a class="hero__cue" href="#services" aria-label="Scroll to services"><span aria-hidden="true"></span></a>
 </section>
+
+<div class="marquee" aria-hidden="true">
+  <div class="marquee__track">
+    <span>Manned guarding</span><b></b><span>Alarm monitoring</span><b></b><span>Rapid response</span><b></b><span>Fire safety</span><b></b><span>Cash in transit</span><b></b><span>K9 patrols</span><b></b><span>VIP protection</span><b></b><span>Risk management</span><b></b>
+    <span>Manned guarding</span><b></b><span>Alarm monitoring</span><b></b><span>Rapid response</span><b></b><span>Fire safety</span><b></b><span>Cash in transit</span><b></b><span>K9 patrols</span><b></b><span>VIP protection</span><b></b><span>Risk management</span><b></b>
+  </div>
+</div>
 
 <div class="assurance">
   <div class="shell assurance__grid" data-stagger>
@@ -260,6 +269,13 @@
     <div class="operations-grid">
       <div class="operations-console" data-reveal>
         <div class="console-top"><span class="status"><i aria-hidden="true"></i>24-hour coordination</span><span>CT / OPS</span></div>
+        <svg class="radar" viewBox="0 0 120 120" aria-hidden="true">
+          <circle cx="60" cy="60" r="54"/><circle cx="60" cy="60" r="36"/><circle cx="60" cy="60" r="18"/>
+          <path d="M6 60H114M60 6V114"/>
+          <g class="radar__sweep"><path d="M60 60 L114 60 A54 54 0 0 0 98 22 Z"/></g>
+          <circle class="radar__blip" cx="84" cy="44" r="2.6"/>
+          <circle class="radar__blip radar__blip--b" cx="40" cy="78" r="2.6"/>
+        </svg>
         <strong>Always<br>on <em>watch.</em></strong>
         <p>Our control room connects site officers, field supervisors and response teams.</p>
         <div class="console-network" aria-label="Operational communications">
