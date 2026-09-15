@@ -6,9 +6,13 @@ The site presents the company’s core security services, specialist capabilitie
 
 ## Design system
 
-Charcoal, warm gold and ivory, set in **Archivo** for body copy and **Archivo Narrow** for display (SIL OFL 1.1, `assets/fonts/OFL.txt`). Both ship as single variable files covering every weight the page uses — 53 KB of WOFF2 in place of the 246 KB of OpenType the site previously loaded, with the full weight range rather than two fixed cuts.
+Charcoal, brass gold and ivory, set in **Archivo** for body copy and **Saira** for display (both SIL OFL 1.1; licences in `assets/fonts/`). Saira carries a width axis as well as a weight axis, and display type is set at `font-stretch: 112%` so its squared, extended letterforms echo the Caretaker wordmark. Both faces ship as single variable files covering every weight the page uses.
 
-Each webfont is paired with a fallback face that re-metrics Arial to Archivo's proportions (`size-adjust`, `ascent-override`, `descent-override`), so the swap when the webfont lands does not reflow the page. Those ratios were measured from rendered text rather than estimated.
+The palette is anchored to the brass gold of the shield (`--gold-brand: #9c8442`). Lighter and darker steps exist only so type keeps its contrast on dark and light grounds respectively — the mark colour itself is never altered.
+
+Each webfont is paired with a fallback face that re-metrics Arial to that face's proportions (`size-adjust`, `ascent-override`, `descent-override`), so the swap when the webfont lands does not reflow the page. Those ratios were measured from rendered text rather than estimated.
+
+**The shield mark** is four SVG strokes that together read as a segmented shield, used in the header, footer, favicon, leadership portraits and as a watermark in the mobile menu. Because it is stroked rather than filled, each segment draws itself on independently in the introduction. It is a stand-in echoing the brand geometry — see "Assets and content" below.
 
 `styles.css` declares its layer order up front — `reset, base, layout, components, sections, motion, responsive` — so a rule's weight comes from where it lives rather than from selector specificity, and the reset sits at zero specificity behind `:where()`. Tokens for surface, brand, text, line, space and motion are declared once; rule colours are derived from the surface colours with `color-mix()` rather than re-picked by hand. Service cards are container queries: each card sizes its own typography from its own width, so the grid can be re-columned without re-tuning type at every breakpoint.
 
@@ -44,8 +48,9 @@ Then open `http://localhost:8080`.
 ## Assets and content
 
 - The hero is AI-generated illustrative photography, created for this website. It does not depict actual Caretaker personnel or premises, which the `alt` text states. Desktop and mobile WebP crops total approximately 109 KB.
-- Leadership uses names and roles from the existing site, without invented portraits.
-- Archivo and Archivo Narrow (Omnibus-Type) are distributed as unmodified WOFF2 files under the SIL Open Font License 1.1. The licence is included at `assets/fonts/OFL.txt` and must travel with the fonts.
+- **The shield mark is not the official logo.** The Caretaker logo (gold segmented shield behind a squared "CARETAKER / SECURITY SERVICES LIMITED" wordmark) lives in Google Drive as `caretaker.png`. The mark in this repository is a stroked SVG built to echo that geometry so the lockup, favicon and introduction had something on-brand to animate. Replacing it means swapping the four `<path>` elements in `index.html` (three places: header, footer, introduction) plus the favicon data URI and the two watermark data URIs in `styles.css`.
+- **Leadership portraits are not yet supplied.** Each card has a portrait slot showing the person's initials over the shield. Dropping an `<img>` in place of the `<span>` inside `.leader-portrait` is the only change needed — the grayscale treatment, hover behaviour and 4:5 crop are already in place. No portraits were generated, since these are real individuals.
+- Archivo (Omnibus-Type) and Saira (Omnibus-Type) are distributed as unmodified WOFF2 files under the SIL Open Font License 1.1. The licences are included at `assets/fonts/OFL.txt` and `assets/fonts/OFL-Saira.txt` and must travel with the fonts.
 - The source repository did not contain its referenced company-profile PDF. The profile action now opens an email request instead of a broken download.
 - Update the licence details when the stated 2026 validity period changes.
 - An inline SVG favicon, Open Graph/Twitter card tags, a canonical URL and `SecurityService` JSON-LD are in place. The canonical and social URLs point at the GitHub Pages address — change them if a custom domain is added. `robots.txt`, `sitemap.xml` and analytics are still not set up.

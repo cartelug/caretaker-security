@@ -16,7 +16,7 @@
 <meta name="twitter:title" content="Caretaker Security — Protection that holds.">
 <meta name="twitter:description" content="Disciplined people. Connected operations. Licensed security and risk management across Uganda.">
 <meta name="twitter:image" content="https://cartelug.github.io/caretaker-security/assets/caretaker-hero.webp">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23121613'/%3E%3Crect x='3.5' y='3.5' width='25' height='25' fill='none' stroke='%23d3b46f' stroke-width='1.5'/%3E%3Ctext x='16' y='23' font-family='Arial Narrow,Arial,sans-serif' font-weight='700' font-size='19' fill='%23d3b46f' text-anchor='middle'%3EC%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Crect width='120' height='120' fill='%23121613'/%3E%3Cg transform='translate(10,4)' fill='none' stroke='%23c9a75f' stroke-width='13'%3E%3Cpath d='M30 6.5H93.5V48'/%3E%3Cpath d='M6.5 30H44'/%3E%3Cpath d='M93.5 64C93.5 86 78 103 56 112'/%3E%3Cpath d='M6.5 64C6.5 80 16 92 32 101'/%3E%3C/g%3E%3C/svg%3E">
 <title>Caretaker Security — Protection that holds.</title>
 <script>
 /* Decide the intro before first paint: once per session, never under reduced motion. */
@@ -39,7 +39,7 @@
 </script>
 <link rel="preload" href="assets/caretaker-hero.webp" as="image" media="(min-width: 700px)" fetchpriority="high">
 <link rel="preload" href="assets/caretaker-hero-mobile.webp" as="image" media="(max-width: 699px)" fetchpriority="high">
-<link rel="preload" href="assets/fonts/archivo-narrow-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/saira-latin-standard-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/archivo-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="styles.css">
 <script src="script.js" defer></script>
@@ -79,8 +79,10 @@
   <div class="intro__panel intro__panel--bottom"></div>
   <div class="intro__stage">
     <span class="intro__mark">
-      <svg viewBox="0 0 96 96" aria-hidden="true"><rect class="intro__box" x="1.5" y="1.5" width="93" height="93"/></svg>
-      <b class="intro__glyph">C<i>.</i></b>
+      <svg class="shield intro__shield" viewBox="0 0 100 120" aria-hidden="true"><g>
+        <path d="M30 6.5H93.5V48"/><path d="M6.5 30H44"/>
+        <path d="M93.5 64C93.5 86 78 103 56 112"/><path d="M6.5 64C6.5 80 16 92 32 101"/>
+      </g></svg>
     </span>
     <span class="intro__word" aria-hidden="true"><i>C</i><i>A</i><i>R</i><i>E</i><i>T</i><i>A</i><i>K</i><i>E</i><i>R</i></span>
     <span class="intro__rule"><span class="intro__fill" data-intro-fill></span></span>
@@ -105,8 +107,7 @@
   <div class="shell header-inner">
     <a class="brand" href="#top" aria-label="Caretaker Security Services home">
       <span class="brand__mark" aria-hidden="true">
-        <svg viewBox="0 0 48 48"><rect x="1" y="1" width="46" height="46"/></svg>
-        <b>C<i>.</i></b>
+        <svg class="shield" viewBox="0 0 100 120" role="presentation"><g><path d="M30 6.5H93.5V48"/><path d="M6.5 30H44"/><path d="M93.5 64C93.5 86 78 103 56 112"/><path d="M6.5 64C6.5 80 16 92 32 101"/></g></svg>
       </span>
       <span class="brand__type">Caretaker<small>Security Services Limited</small></span>
     </a>
@@ -136,6 +137,7 @@
     <span class="status"><i aria-hidden="true"></i>Support around the clock</span>
     <a href="tel:+256772634848">+256 772 634 848</a>
     <p>Kampala &amp; Wakiso · Uganda</p>
+    <span class="mobile-menu__licence">UPF licensed · Category A</span>
   </div>
 </dialog>
 
@@ -322,11 +324,26 @@
       </div>
       <p data-reveal>Local and international management experience, guided by a Total Quality Management approach.</p>
     </header>
+    <!-- Each card holds a portrait slot. Until a photograph is supplied the
+         slot shows the initials over the shield; dropping an <img> in place of
+         the <span> is the only change needed. -->
     <div class="leaders" data-stagger>
-      <article data-reveal><span class="leader-index">01 / Executive leadership</span><h3>Kalim<br>Kalamagi</h3><p>Chief Executive Officer</p></article>
-      <article data-reveal><span class="leader-index">02 / Board leadership</span><h3>Stephen<br>Tanui</h3><p>Board Chairman</p></article>
-      <article data-reveal><span class="leader-index">03 / Management</span><h3>Modest<br>Rutagengwa</h3><p>Managing Director</p></article>
-      <article data-reveal><span class="leader-index">04 / Operations</span><h3>Emmanuel<br>Okanya</h3><p>Director of Operations</p></article>
+      <article data-reveal>
+        <div class="leader-portrait"><span aria-hidden="true">KK</span></div>
+        <span class="leader-index">01 / Executive leadership</span><h3>Kalim<br>Kalamagi</h3><p>Chief Executive Officer</p>
+      </article>
+      <article data-reveal>
+        <div class="leader-portrait"><span aria-hidden="true">ST</span></div>
+        <span class="leader-index">02 / Board leadership</span><h3>Stephen<br>Tanui</h3><p>Board Chairman</p>
+      </article>
+      <article data-reveal>
+        <div class="leader-portrait"><span aria-hidden="true">MR</span></div>
+        <span class="leader-index">03 / Management</span><h3>Modest<br>Rutagengwa</h3><p>Managing Director</p>
+      </article>
+      <article data-reveal>
+        <div class="leader-portrait"><span aria-hidden="true">EO</span></div>
+        <span class="leader-index">04 / Operations</span><h3>Emmanuel<br>Okanya</h3><p>Director of Operations</p>
+      </article>
     </div>
   </div>
 </section>
