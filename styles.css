@@ -225,14 +225,35 @@
   .intro__panel--bottom{bottom:0}
   .intro.is-done .intro__panel--top{transform:translateY(-100%)}
   .intro.is-done .intro__panel--bottom{transform:translateY(100%)}
+  /* A gold seam sits on the split and flares as the panels part. */
+  .intro__seam{position:absolute;left:0;right:0;top:50%;z-index:3;height:1px;translate:0 -50%;
+    background:linear-gradient(90deg,transparent,var(--gold),transparent);
+    scale:0 1;opacity:0;transition:scale .7s var(--ease),opacity .5s var(--ease-soft)}
+  .intro.is-done .intro__seam{scale:1 1;opacity:1;transition-duration:.45s,.2s}
   .intro__stage{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;width:min(320px,74vw);color:var(--gold);transition:opacity var(--dur-mid) var(--ease-soft),transform .6s var(--ease)}
   .intro.is-done .intro__stage{opacity:0;transform:translateY(-14px)}
 
-  /* The full stacked lockup rises behind a mask, then settles. */
-  .intro__logo{display:block;width:min(272px,62vw);overflow:hidden}
-  .intro__logo img{width:100%;height:auto;transform:translateY(16%) scale(1.04);opacity:0;
-    animation:logo-settle 1.15s var(--ease) .18s forwards}
-  @keyframes logo-settle{to{transform:none;opacity:1}}
+  /* The badge stacks three layers on one centre: pulsing range rings, the
+     lockup itself, and a gold scan line that wipes the mark into view. */
+  .intro__badge{position:relative;display:grid;place-items:center;width:min(300px,68vw);aspect-ratio:1}
+  .intro__rings{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  .intro__rings circle{fill:none;stroke:var(--gold);stroke-width:.7;opacity:0;transform-origin:100px 100px;
+    animation:ring-pulse 3.2s var(--ease-soft) infinite}
+  .intro__rings circle:nth-child(2){animation-delay:.34s}
+  .intro__rings circle:nth-child(3){animation-delay:.68s}
+  @keyframes ring-pulse{0%{opacity:0;scale:.72}22%{opacity:.5}100%{opacity:0;scale:1.18}}
+
+  .intro__logo{position:relative;display:block;width:min(248px,58vw)}
+  .intro__logo img{width:100%;height:auto;clip-path:inset(0 0 100% 0);
+    animation:logo-wipe 1.05s var(--ease) .32s forwards}
+  @keyframes logo-wipe{to{clip-path:inset(0 0 -2% 0)}}
+
+  /* The scan travels with the wipe edge, then leaves. */
+  .intro__scan{position:absolute;left:-6%;right:-6%;top:0;height:2px;
+    background:linear-gradient(90deg,transparent,var(--gold-bright),transparent);
+    opacity:0;animation:scan 1.05s var(--ease) .32s forwards;
+    box-shadow:0 0 18px color-mix(in srgb,var(--gold) 70%,transparent)}
+  @keyframes scan{0%{top:100%;opacity:0}12%{opacity:1}88%{opacity:1}100%{top:0;opacity:0}}
 
   .intro__word{display:flex;gap:.02em;margin-top:26px;font-family:var(--font-display);font-size:26px;font-weight:700;font-stretch:var(--display-stretch);letter-spacing:.085em;text-transform:uppercase;overflow:hidden}
   .intro__word i{display:block;font-style:normal;transform:translateY(105%);animation:letter-rise .8s var(--ease) forwards;animation-delay:calc(1.05s + (var(--i) * .045s))}
@@ -277,14 +298,17 @@
   .mobile-menu:not([open]){display:none}
 
   /* --- Hero ------------------------------------------------------------ */
-  .hero{position:relative;z-index:2;isolation:isolate;min-height:min(780px,calc(100svh - 128px));display:flex;align-items:center;overflow:hidden;background:#171e1a;color:var(--white)}
-  .hero__image{position:absolute;inset:-8% 0;z-index:-2;will-change:transform}
+  /* Split hero: the profile cover is a portrait photograph, so it holds the
+     right-hand column at full height rather than being cropped to a band. */
+  .hero{position:relative;z-index:2;isolation:isolate;min-height:min(820px,calc(100svh - 128px));display:flex;align-items:center;overflow:hidden;background:var(--ink);color:var(--white)}
+  .hero__image{position:absolute;inset:0 0 0 auto;width:min(46%,760px);z-index:-2;will-change:transform}
   .hero__image picture{display:block;width:100%;height:100%}
-  .hero__image img{height:100%;object-fit:cover;object-position:center 42%;transform:scale(1.14);transition:transform 2s var(--ease)}
+  .hero__image img{height:100%;object-fit:cover;object-position:center 12%;transform:scale(1.08);transition:transform 2.2s var(--ease)}
   .is-ready .hero__image img{transform:scale(1)}
+  /* Feather the photograph into the dark field instead of butting it up. */
   .hero::after{content:'';position:absolute;inset:0;z-index:-1;background:
-    linear-gradient(90deg,rgb(9 17 12 / .88),rgb(9 17 12 / .48) 48%,rgb(9 17 12 / .04) 78%),
-    linear-gradient(0deg,rgb(13 22 13 / .82),transparent 38%)}
+    linear-gradient(90deg,var(--ink) 0%,var(--ink) 40%,rgb(18 22 19 / .72) 54%,rgb(18 22 19 / .12) 70%,transparent 86%),
+    linear-gradient(0deg,rgb(10 14 11 / .72),transparent 42%)}
   .hero__content{position:relative;padding-block:84px 120px}
   .hero__eyebrow{color:var(--gold);display:flex;align-items:center;gap:var(--s3);font-size:var(--text-xs)}
   .hero__eyebrow::before{content:'';width:0;height:1px;background:currentColor;transition:width var(--dur-slow) var(--ease) .2s}
@@ -667,7 +691,8 @@
     @keyframes menu-enter{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
 
     .hero{min-height:640px}
-    .hero h1{font-size:clamp(64px,10vw,100px)}
+    .hero__image{width:min(52%,560px)}
+    .hero h1{font-size:clamp(46px,7.2vw,72px)}
     .hero__content{padding-block:78px 112px}
     .hero__actions{flex-direction:column;align-items:flex-start;gap:var(--s3)}
     .hero::after{background:linear-gradient(90deg,rgb(9 17 12 / .9),rgb(9 17 12 / .45) 65%,rgb(9 17 12 / .07)),linear-gradient(0deg,rgb(13 22 13 / .79),transparent 35%)}
@@ -714,9 +739,10 @@
     .intro__mark{width:78px;height:78px}
     .intro__glyph{font-size:50px}
     .intro__word{font-size:27px;margin-top:var(--s5)}
-    .hero{min-height:660px;align-items:flex-end}
-    .hero__image img{object-position:center top}
-    .hero::after{background:linear-gradient(0deg,rgb(11 22 15 / .96) 2%,rgb(11 22 15 / .8) 36%,rgb(11 22 15 / .22) 65%,rgb(11 22 15 / .05))}
+    .hero{min-height:680px;align-items:flex-end}
+    .hero__image{inset:0;width:100%}
+    .hero__image img{object-position:center 8%}
+    .hero::after{background:linear-gradient(0deg,rgb(11 15 12 / .97) 4%,rgb(11 15 12 / .84) 34%,rgb(11 15 12 / .3) 62%,rgb(11 15 12 / .08))}
     .hero__content{padding-block:220px 70px}
     .hero__eyebrow{font-size:8px;gap:var(--s2)}
     .is-ready .hero__eyebrow::before{width:17px}
