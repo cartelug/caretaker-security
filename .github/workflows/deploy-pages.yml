@@ -4,7 +4,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'dist/**'
+      - 'index.html'
+      - 'styles.css'
+      - 'script.js'
+      - 'assets/**'
+      - '.nojekyll'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
 
@@ -31,10 +35,10 @@ jobs:
 
       - name: Validate publishing files
         run: |
-          test -s dist/index.html
-          test -s dist/styles.css
-          test -s dist/script.js
-          node --check dist/script.js
+          test -s index.html
+          test -s styles.css
+          test -s script.js
+          node --check script.js
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
@@ -42,7 +46,7 @@ jobs:
       - name: Upload website
         uses: actions/upload-pages-artifact@v4
         with:
-          path: dist
+          path: .
 
       - name: Publish to GitHub Pages
         id: deployment

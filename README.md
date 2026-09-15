@@ -14,32 +14,32 @@ The Caretaker lockup is an SVG-boxed `C.` monogram beside the wordmark, used in 
 
 **Scroll motion.** A single `IntersectionObserver` reveals sections as they enter, with grouped items staggering via a `--d` custom property set from markup order. Section headings rise line by line out of an overflow mask. The hero image holds a slow parallax and scales down on entry, a gold progress rule tracks reading position in the header, and the header itself retracts while reading downward and returns on the way up. Header state, progress and parallax share one `requestAnimationFrame` loop reading scroll position once per frame.
 
-The hero photography is unchanged (same `dist/assets/caretaker-hero.webp` / `caretaker-hero-mobile.webp` files and responsive `<picture>` source-swap), presented full-bleed behind layered gradients as before.
+The hero photography is unchanged (same `assets/caretaker-hero.webp` / `caretaker-hero-mobile.webp` files and responsive `<picture>` source-swap), presented full-bleed behind layered gradients as before.
 
 **Progressive enhancement.** Motion is opt-in: `script.js` adds `has-motion` only when the browser supports `IntersectionObserver` and the visitor has not asked for reduced motion, and every reveal rule is scoped to that class. With scripting blocked or motion reduced, all content renders at full opacity and the introduction never displays. The native `<dialog>` mobile menu keeps focus containment, Escape, an inert background and focus return.
 
 ## Run locally
 
-Serve the `dist` directory with any static web server. For example:
+Serve the repository root with any static web server. For example:
 
 ```bash
-python3 -m http.server 8080 --directory dist
+python3 -m http.server 8080
 ```
 
 Then open `http://localhost:8080`.
 
 ## Structure
 
-- `dist/index.html` — page content and metadata
-- `dist/styles.css` — responsive visual system
-- `dist/script.js` — animated introduction, scroll reveals, header/parallax frame loop, mobile navigation dialog and contact shortcut
-- `dist/assets/` — optimized hero images, fonts and font licensing
+- `index.html` — page content and metadata
+- `styles.css` — responsive visual system
+- `script.js` — animated introduction, scroll reveals, header/parallax frame loop, mobile navigation dialog and contact shortcut
+- `assets/` — optimized hero images, fonts and font licensing
 
 ## Assets and content
 
 - The hero is AI-generated illustrative photography, created for this website. It does not depict actual Caretaker personnel or premises, which the `alt` text states. Desktop and mobile WebP crops total approximately 109 KB.
 - Leadership uses names and roles from the existing site, without invented portraits.
-- Nimbus Sans and Nimbus Sans Narrow are distributed as unmodified OpenType files. Their copyright and licensing notices are included in `dist/assets/FONT-LICENSE.txt`.
+- Nimbus Sans and Nimbus Sans Narrow are distributed as unmodified OpenType files. Their copyright and licensing notices are included in `assets/FONT-LICENSE.txt`.
 - The source repository did not contain its referenced company-profile PDF. The profile action now opens an email request instead of a broken download.
 - Update the licence details when the stated 2026 validity period changes.
 - An inline SVG favicon, Open Graph/Twitter card tags, a canonical URL and `SecurityService` JSON-LD are in place. The canonical and social URLs point at the GitHub Pages address — change them if a custom domain is added. `robots.txt`, `sitemap.xml` and analytics are still not set up.
@@ -59,6 +59,8 @@ The GitHub Actions publish check (`node --check` plus non-empty file checks) pas
 
 ## Deployment
 
-The repository is ready for static hosting. GitHub Pages, Cloudflare Pages or any equivalent service. The published site should use `dist` as its web root.
+The site lives at the repository root, so `index.html` is the entry point for any static host — GitHub Pages, Cloudflare Pages or equivalent.
+
+Published to GitHub Pages by `.github/workflows/deploy-pages.yml` on pushes to `main`. The repository's Pages source is set to **GitHub Actions**, and the workflow uploads the repository root as the artifact. Because `index.html` is now at the root, the branch-based "Deploy from a branch" source (root folder) would also work if that setting is ever changed.
 
 © 2026 Caretaker Security Services Limited.
