@@ -12,13 +12,11 @@ The palette is anchored to the brass gold of the shield (`--gold-brand: #9c8442`
 
 Each webfont is paired with a fallback face that re-metrics Arial to that face's proportions (`size-adjust`, `ascent-override`, `descent-override`), so the swap when the webfont lands does not reflow the page. Those ratios were measured from rendered text rather than estimated.
 
-**The shield mark** is four SVG strokes that together read as a segmented shield, used in the header, footer, favicon, leadership portraits and as a watermark in the mobile menu. Because it is stroked rather than filled, each segment draws itself on independently in the introduction. It is a stand-in echoing the brand geometry — see "Assets and content" below.
+**The logo** is the real Caretaker artwork, recovered from the company profile PDF. Both supplied variants (black wordmark for light grounds, white for dark) are pixel-aligned, so an exact alpha mask was derived from the light version and applied to either — giving transparent lockups with no white box and no lost wordmark. From those, `assets/brand/` holds a horizontal lockup (shield beside wordmark, for the header and footer where a stacked mark would be illegible), the stacked lockup (used large in the introduction), and the shield on its own. Light and dark variants of each are included.
 
 `styles.css` declares its layer order up front — `reset, base, layout, components, sections, motion, responsive` — so a rule's weight comes from where it lives rather than from selector specificity, and the reset sits at zero specificity behind `:where()`. Tokens for surface, brand, text, line, space and motion are declared once; rule colours are derived from the surface colours with `color-mix()` rather than re-picked by hand. Service cards are container queries: each card sizes its own typography from its own width, so the grid can be re-columned without re-tuning type at every breakpoint.
 
-The Caretaker lockup is an SVG-boxed `C.` monogram beside the wordmark, used in the header, footer and introduction. It is built from live text and a stroked SVG rect rather than a flattened image, which is what lets the introduction animate it.
-
-**Animated introduction.** On the first visit in a browsing session the brand assembles: the monogram box draws itself on with a stroke-dash sweep, the `C.` rises behind a mask, the wordmark letters stagger up, a rule expands under a live percentage counter, and two panels split apart to reveal the hero. It is skipped entirely under reduced motion, shown once per tab (`sessionStorage`), dismissable with any click or key, and bounded by both a script-side cap and a `<head>` fallback timer so a slow network can never trap the page behind it.
+**Animated introduction.** On the first visit in a browsing session the brand assembles: the stacked logo rises behind a mask and settles, a rule expands under a live percentage counter, and two panels split apart to reveal the hero. It is skipped entirely under reduced motion, shown once per tab (`sessionStorage`), dismissable with any click or key, and bounded by both a script-side cap and a `<head>` fallback timer so a slow network can never trap the page behind it.
 
 **Atmosphere.** Gold accents in display type are clipped to a brushed metallic gradient rather than filled flat, with a solid-colour fallback behind `@supports`. The hero and contact sections carry a pointer-tracked warm glow, the hero is framed by tactical corner brackets and a draining scroll filament, a marquee band of services runs between hero and page, service cards carry oversized generated index numerals, and the operations console runs a live radar sweep. Pointer effects are gated on `(hover: hover) and (pointer: fine)`, so touch and keyboard users get the static composition.
 
@@ -45,15 +43,15 @@ Then open `http://localhost:8080`.
 - `index.html` — page content and metadata
 - `styles.css` — responsive visual system
 - `script.js` — animated introduction, scroll reveals, header/parallax frame loop, mobile navigation dialog and contact shortcut
-- `assets/` — optimized hero images, fonts and font licensing
+- `assets/` — brand lockups (`brand/`), leadership portraits (`team/`), field photography (`field/`), hero images, fonts and the company profile PDF
 
 ## Assets and content
 
-- The hero is AI-generated illustrative photography, created for this website. It does not depict actual Caretaker personnel or premises, which the `alt` text states. Desktop and mobile WebP crops total approximately 109 KB.
-- **The shield mark is not the official logo.** The Caretaker logo (gold segmented shield behind a squared "CARETAKER / SECURITY SERVICES LIMITED" wordmark) lives in Google Drive as `caretaker.png`. The mark in this repository is a stroked SVG built to echo that geometry so the lockup, favicon and introduction had something on-brand to animate. Replacing it means swapping the four `<path>` elements in `index.html` (three places: header, footer, introduction) plus the favicon data URI and the two watermark data URIs in `styles.css`.
-- **Leadership portraits are not yet supplied.** Each card has a portrait slot showing the person's initials over the shield. Dropping an `<img>` in place of the `<span>` inside `.leader-portrait` is the only change needed — the grayscale treatment, hover behaviour and 4:5 crop are already in place. No portraits were generated, since these are real individuals.
+- Brand artwork, leadership portraits and field photography were extracted from `Caretaker_Company_Profile_V9_Corrected.pdf` and are the company's own images. Portraits were mapped to names by their coordinates on the profile's management page rather than by guesswork.
+- The hero remains AI-generated illustrative photography and does not depict actual Caretaker personnel, which its `alt` text states. Everything in "In the field" and "Leadership" is real.
+- The company profile is served at `assets/caretaker-company-profile.pdf` (8.6 MB). It is the largest asset in the repository; if that matters for cloning, host it externally and point the link there.
 - Archivo (Omnibus-Type) and Saira (Omnibus-Type) are distributed as unmodified WOFF2 files under the SIL Open Font License 1.1. The licences are included at `assets/fonts/OFL.txt` and `assets/fonts/OFL-Saira.txt` and must travel with the fonts.
-- The source repository did not contain its referenced company-profile PDF. The profile action now opens an email request instead of a broken download.
+- The Standards section links the profile as a real download; it previously opened an email request because the file was missing.
 - Update the licence details when the stated 2026 validity period changes.
 - An inline SVG favicon, Open Graph/Twitter card tags, a canonical URL and `SecurityService` JSON-LD are in place. The canonical and social URLs point at the GitHub Pages address — change them if a custom domain is added. `robots.txt`, `sitemap.xml` and analytics are still not set up.
 
