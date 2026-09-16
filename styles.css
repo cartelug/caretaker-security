@@ -351,7 +351,14 @@
   .service-card::before{content:'';position:absolute;top:-1px;left:0;right:0;height:2px;background:var(--gold);transform:scaleX(0);transform-origin:left;transition:transform .5s var(--ease)}
   .service-card:hover{background:var(--paper)}
   .service-card:hover::before{transform:scaleX(1)}
-  .service-card__top{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s3);margin-bottom:58px}
+  .service-card__top{display:flex;justify-content:space-between;align-items:flex-start;gap:var(--s3);margin-bottom:24px}
+  /* The photograph takes the dead space the label used to hold open, so the
+     card gains an image without gaining height. It bleeds to the card edge:
+     the negative inline margin cancels the card's own padding. */
+  .service-card__media{position:relative;margin:0 -26px 26px;aspect-ratio:3/2;overflow:hidden;background:var(--ink)}
+  .service-card__media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .9s var(--ease)}
+  .service-card__media::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,transparent 58%,rgb(10 14 11 / .28));pointer-events:none}
+  .service-card:hover .service-card__media img{transform:scale(1.045)}
   .service-card__top>span{font-size:var(--text-2xs);letter-spacing:.045em;text-transform:uppercase;color:#667064;max-width:120px}
   .service-card svg{width:34px;height:34px;flex-shrink:0;color:var(--gold-deep);transition:transform .5s var(--ease),color .3s}
   .service-card:hover svg{transform:translateY(-3px);color:var(--gold)}
@@ -363,7 +370,7 @@
   /* Headings keep their authored <br>: hiding a <br> with display:none drops
      the break without leaving a space, which runs the words together. */
   @container (min-width: 380px){
-    .service-card__top{margin-bottom:36px}
+    .service-card__top{margin-bottom:22px}
     .service-card h3{font-size:31px}
     .service-card p{font-size:var(--text-xl);max-width:46ch}
   }
@@ -396,6 +403,9 @@
   .process-list li{display:flex;gap:30px;padding:var(--s7) 0;border-bottom:1px solid var(--line)}
   .process-list li:first-child{padding-top:6px}
   .process-number{font-family:var(--font-display);font-stretch:var(--display-stretch);font-size:23px;font-weight:700;line-height:1;color:#7c8875}
+  .process-thumb{flex:0 0 128px;align-self:flex-start;aspect-ratio:1;overflow:hidden;background:var(--ink)}
+  .process-thumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .9s var(--ease)}
+  .process-list li:hover .process-thumb img{transform:scale(1.05)}
   .process-list h3{font-size:27px;margin-top:var(--s3);line-height:1.1}
   .process-list p{font-size:var(--text-lg);color:var(--ink-muted);margin-top:18px}
   .process-list .eyebrow{font-size:var(--text-xs)}
@@ -713,6 +723,7 @@
     .operations-console{padding:var(--s6)}
     .console-top>span:last-child{display:none}
     .process-list li{gap:var(--s4);padding-block:var(--s6)}
+    .process-thumb{flex-basis:96px}
     .process-list h3{font-size:25px}
     .process-list p{font-size:var(--text-base)}
     .standards-grid{grid-template-columns:1fr;gap:var(--s8)}
@@ -783,7 +794,8 @@
     .operations-console>strong{font-size:clamp(44px,12vw,64px);margin-top:var(--s7)}
     .operations-console>p{max-width:100%;font-size:var(--text-xl)}
     .console-top>span:last-child{display:block}
-    .process-list li{gap:var(--s6);padding-block:var(--s6)}
+    .process-list li{gap:var(--s6);padding-block:var(--s6);flex-wrap:wrap}
+    .process-thumb{order:-1;flex:0 0 100%;aspect-ratio:16/9}
     .process-list li:first-child{padding-top:0}
     .process-list h3{font-size:26px}
     .process-list p{font-size:var(--text-xl);margin-top:var(--s4)}

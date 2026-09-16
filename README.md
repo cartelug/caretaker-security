@@ -49,17 +49,60 @@ Then open `http://localhost:8080`.
 - `script.js` — animated introduction, scroll reveals, header/parallax frame loop, mobile navigation dialog and contact shortcut
 - `assets/` — brand lockups (`brand/`), leadership portraits (`team/`), field photography (`field/`), hero images, the share card, fonts and the company profile PDF
 - `tools/social-card.html` — the share card's source; screenshot it at 1200 × 630 to regenerate `assets/social-card.jpg`
+- `tools/image-pipeline/` — the grade and logo-composite passes applied to the generated service and process imagery
 
 ## Assets and content
 
 - Brand artwork, leadership portraits and field photography were extracted from `Caretaker_Company_Profile_V9_Corrected.pdf` and are the company's own images. Portraits were mapped to names by their coordinates on the profile's management page rather than by guesswork.
-- Every photograph on the site is now the company's own, taken from the profile. The AI-generated hero it previously used has been removed.
+- The hero, the leadership portraits and the six frames in **In the field** are the company's own photographs. The four service-card images (`assets/service/`) and the three process-step images (`assets/process/`) are **generated illustrations** — see below.
 - The company profile is served at `assets/caretaker-company-profile.pdf` (8.6 MB). It is the largest asset in the repository; if that matters for cloning, host it externally and point the link there.
 - Archivo (Omnibus-Type) and Saira (Omnibus-Type) are distributed as unmodified WOFF2 files under the SIL Open Font License 1.1. The licences are included at `assets/fonts/OFL.txt` and `assets/fonts/OFL-Saira.txt` and must travel with the fonts.
 - The Standards section links the profile as a real download; it previously opened an email request because the file was missing.
 - Update the licence details when the stated 2026 validity period changes.
 - A favicon and Apple touch icon, Open Graph/Twitter card tags, a canonical URL and `SecurityService` JSON-LD are in place. The canonical and social URLs point at the GitHub Pages address — change them if a custom domain is added. `robots.txt`, `sitemap.xml` and analytics are still not set up.
 - The share card (`assets/social-card.jpg`, 1200 × 630) is branded: the stacked lockup, the headline and the officer, composed in the site's own typography. It is served as JPEG because WebP Open Graph images are still unreliable on LinkedIn and several crawlers; `assets/social-card.webp` carries the same artwork so links shared before the change resolve to the new card rather than a missing file. It is rendered from `tools/social-card.html` through the site's own fonts and colour tokens, not drawn by hand — regenerate it by screenshotting that page at 1200 × 630.
+
+## Generated imagery
+
+Seven frames in the explanatory sections — the four service cards and the three
+process steps — are generated rather than photographed. They illustrate what a
+service *is*; they do not assert that a particular event happened.
+
+That line is deliberate and load-bearing. **In the field** is captioned
+"Photographs from Caretaker operations, training and commissioning across
+Uganda", which is a documentary claim, and every image in it is real. No
+generated frame goes there, none depicts a named person, a real client site, a
+dated event or a certificate, and no alt text claims otherwise.
+
+Each frame was generated with a deliberately **blank** uniform — no emblem, no
+patch, no lettering — because image models render logos as mush. Two scripted
+passes finish them, kept in `tools/image-pipeline/` as a record of how:
+
+- `grade.py` puts the set into one grade. Measuring the row first showed the
+  real mismatch was colour temperature, not level: one card sat at +17 highlight
+  warmth against another's +49, which is what makes two frames look like two
+  different shoots. So it offsets the black point to the site's ink rather than
+  stretching the histogram (a stretch flattens contrast the frames already
+  have), nudges level only where a frame is an outlier, and spends the effort
+  aligning warmth. Night interiors stay darker than daylight corridors, because
+  that difference is real. Across the four cards this took the warmth spread
+  from 32 points to 12 and the median spread from 57 to 23, with contrast
+  unchanged.
+- `badge.py` composites the genuine chest mark from `assets/brand/`. It is
+  multiplied into the fabric rather than pasted over it, so the shirt's own
+  shading and creases fall across it, then blurred to the local focus of each
+  frame. Placement is per-officer and set from the company's own photographs:
+  the mark sits on the wearer's left chest, about a pocket wide, clear of the
+  button placket.
+
+Both scripts expect the original renders alongside them and are included for
+provenance, not as part of the build.
+
+Before any of that, the frames were swept for the defects that betray
+generation: finger counts on every visible hand, and any lettering that crept
+onto an ID card, a sign or a vehicle. This set came back clean on both — the ID
+cards, the extinguisher service tag, the occurrence books and the clipboard site
+plan are all blank or abstract by design.
 
 ## Validation
 
