@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.caretakersecurity.com/sitemap.xml
+Sitemap: https://cartelug.github.io/caretaker-security/sitemap.xml

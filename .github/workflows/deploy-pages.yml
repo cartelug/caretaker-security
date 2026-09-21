@@ -43,7 +43,6 @@ jobs:
           done
           test -s styles.css
           test -s script.js
-          test -s CNAME
           test -s robots.txt
           test -s sitemap.xml
           node --check script.js

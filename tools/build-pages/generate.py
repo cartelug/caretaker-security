@@ -20,7 +20,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 FRAGMENTS = Path(__file__).resolve().parent / "fragments"
 
-SITE = "https://www.caretakersecurity.com"
+# The custom domain isn't registered yet — every URL here points at the
+# address that's actually live. Once www.caretakersecurity.com is registered
+# and DNS is pointed at GitHub Pages, this is the one line to change back
+# (and CNAME, sitemap.xml and robots.txt need the same swap — see README).
+SITE = "https://cartelug.github.io/caretaker-security"
 SOCIAL_IMAGE = f"{SITE}/assets/social-card.jpg"
 
 # Every page, in nav order. "home" writes to index.html; every other slug
@@ -141,15 +145,17 @@ HERO_PRELOAD = """<link rel="preload" href="assets/hero-officer.webp" as="image"
 <link rel="preload" href="assets/hero-officer-mobile.webp" as="image" media="(max-width: 899px)" fetchpriority="high">
 """
 
+# Plain triple-quoted string with __SITE__/__IMAGE__ placeholders, not an
+# f-string — the JSON body's own braces would otherwise all need escaping.
 JSONLD = """<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SecurityService",
   "name": "Caretaker Security Services Limited",
   "description": "Uganda Police Force licensed Category A guard and escort services, 24/7 alarm monitoring and rapid response, fire safety and cash management.",
-  "url": "https://www.caretakersecurity.com/",
-  "image": "https://www.caretakersecurity.com/assets/social-card.jpg",
-  "logo": "https://www.caretakersecurity.com/assets/brand/caretaker-logo-stacked-dark.webp",
+  "url": "__SITE__/",
+  "image": "__IMAGE__",
+  "logo": "__SITE__/assets/brand/caretaker-logo-stacked-dark.webp",
   "telephone": "+256772634848",
   "email": "ctaker10@gmail.com",
   "address": {
@@ -169,7 +175,7 @@ JSONLD = """<script type="application/ld+json">
   "hasCredential": "Uganda Police Force licence A0115/2026 — Category A, Guard & Escort"
 }
 </script>
-"""
+""".replace("__SITE__", SITE).replace("__IMAGE__", SOCIAL_IMAGE)
 
 SPRITE = """<svg class="sprite" aria-hidden="true" focusable="false"><defs>
 <symbol id="i-ne" viewBox="0 0 24 24"><path d="M6 18L18 6M9 6h9v9"/></symbol>
