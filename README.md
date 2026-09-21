@@ -2,7 +2,7 @@
 
 Official marketing website for Caretaker Security Services Limited, Kampala, Uganda.
 
-The site presents the company’s core security services, specialist capabilities, operational model, licensing, training standards, leadership and contact information. Company details are retained from the existing website's corrected 2026 profile content.
+Eleven pages: a home page introducing the company and its capabilities, then About, Services, Operations, Compliance, Leadership, Careers, a Company Profile preview, Contact (with a call-to-action and an enquiry form), and Privacy Policy / Terms of Use. It was a single scrolling page through its first several revisions; it became this site following an internal review that asked for a conventional multi-page structure, a corrected contact email, a proper company domain, and Privacy/Terms pages. Company details are sourced from the company's own profile document, `assets/caretaker-company-profile.pdf`.
 
 ## Design system
 
@@ -30,7 +30,48 @@ Its scrim is cut to the copy rather than applied as a flat wash. On the phone la
 
 **Progressive enhancement.** Motion is opt-in: `script.js` adds `has-motion` only when the browser supports `IntersectionObserver` and the visitor has not asked for reduced motion, and every reveal rule is scoped to that class. With scripting blocked or motion reduced, all content renders at full opacity and the introduction never displays. The native `<dialog>` mobile menu keeps focus containment, Escape, an inert background and focus return. Switching the motion preference mid-visit tears the reveal system down and releases its listeners.
 
-`script.js` is organised as one module per behaviour behind a shared frame scheduler: every scroll-driven effect (header state, reading progress, hero parallax) registers a task and the scheduler reads `window.scrollY` once per frame, rather than each effect adding its own listener and its own read. Initialisation is idempotent, so a double include cannot double-bind.
+`script.js` is organised as one module per behaviour behind a shared frame scheduler: every scroll-driven effect (header state, reading progress, hero parallax) registers a task and the scheduler reads `window.scrollY` once per frame, rather than each effect adding its own listener and its own read. Initialisation is idempotent, so a double include cannot double-bind. It is entirely page-agnostic — every module guards on the elements it needs and no-ops where they're absent — so the same file runs unmodified on all eleven pages.
+
+## Site structure
+
+Eleven flat HTML files at the repository root, sharing one header, mobile menu, footer and animated introduction:
+
+| Page | Covers |
+|---|---|
+| `index.html` (Home) | Hero, service capability strip, a short "why Caretaker" and a closing call to action |
+| `about.html` | Executive overview, vision/mission/quality statements, the five core values, strengths & international record, and the **In the field** photo gallery (moved here from Home) |
+| `services.html` | The four core services in full, the technology strip (CCTV, access control, electric fences…) and the specialist protection list |
+| `operations.html` | The control-room console, the Deploy → Verify → Respond process, and a quality-assurance note |
+| `compliance.html` | The Uganda Police Force licence, incorporation and regulator detail, and the vetting/training checklist |
+| `leadership.html` | The four leadership portraits and titles |
+| `careers.html` | An honest "no positions currently advertised" page inviting speculative applications — there is no fabricated job listing |
+| `profile.html` | An inline PDF preview of the company profile, plus download |
+| `contact.html` | Offices, phone and email, and a client-side enquiry form |
+| `privacy.html` / `terms.html` | Plain-English policy pages (see *Privacy & Terms*, below) |
+
+Home carries the only hero and the only full-page motion sequence's `data-hero-item`s; every other page opens on a `.page-hero` (eyebrow, `<h1>`, one or two lede paragraphs) and most close on a shared `.page-cta` band. About's core-value and strengths content, Compliance's incorporation and regulator facts, and Careers' copy are all drawn directly from the company profile PDF — nothing about the company itself is invented.
+
+### The page generator
+
+The eleven files are **not** hand-duplicated. `tools/build-pages/generate.py` is a small, dependency-free Python script that owns the shared chrome — the `<head>` block, the SVG icon sprite, the intro preloader, the header and its navigation, the mobile menu, and the footer's three link groups — and stitches it around each page's own content, which lives as a plain HTML fragment in `tools/build-pages/fragments/<slug>.html` (the `<main>` content only). Run it after changing anything shared across pages:
+
+```bash
+python3 tools/build-pages/generate.py
+```
+
+This is an **authoring tool, not a build step** — it runs once by hand, and its output (the eleven `*.html` files) is committed as ordinary static HTML. Nothing in the deploy pipeline or the "run locally" instructions below depends on Python, Node or any templating at all; a page is a page, exactly as if it had been typed by hand. Regenerate and recommit whenever the shared header, footer, nav list or intro markup needs to change everywhere at once, rather than hand-editing eleven files and risking drift between them. A content-only change (new paragraph, new list item) is still made by editing the page's own fragment and re-running the generator, or, if that feels like overhead for a one-line fix, by editing the generated `*.html` file directly — the two are meant to be interchangeable, since the generator's output is never touched by tooling afterward.
+
+### Navigation
+
+The header nav carries eight destinations (Home, About, Services, Operations, Compliance, Leadership, Careers, Contact) plus the "Let's talk security" button — Company Profile and the two legal pages are reachable from the footer, from in-page links, and from the mobile menu's small legal line, rather than crowding the primary nav. The current page is marked with `aria-current="page"` and stays visibly underlined rather than only lighting up on hover. The mobile dialog lists the same eight items as a numbered list; at eight items it now scrolls within its own panel rather than shrinking the type further to force a fit.
+
+### Privacy & Terms
+
+Both pages answer the specific questions raised in the internal review rather than reading as generic boilerplate. Privacy states plainly what's true of this site: no server, no database, no cookies, no analytics — the only information Caretaker ever receives is what a visitor types into the enquiry form or sends by email, and that goes straight to a personal inbox via `mailto:`, never through anything this website controls. Terms covers the six topics asked for (content, IP, accuracy, external links, liability, acceptable use) in plain English scoped to a marketing site, not a SaaS product.
+
+### The enquiry form
+
+`contact.html` adds a form with no backend to send to — GitHub Pages is static hosting. It works two ways at once: the `<form>`'s own `action="mailto:…" method="post" enctype="text/plain"` gives it a native, no-JavaScript-required submission path (imperfect across browsers, but functional), and `script.js`'s `createEnquiryForm()` intercepts the submit to build a cleaner, consistently-encoded `mailto:` link from the same fields and tell the visitor what just happened. Either way, nothing the visitor types is transmitted to or stored by this website; it only ever leaves through their own email client, matching what the Privacy Policy says.
 
 ## Run locally
 
@@ -44,10 +85,13 @@ Then open `http://localhost:8080`.
 
 ## Structure
 
-- `index.html` — page content and metadata
-- `styles.css` — responsive visual system
-- `script.js` — animated introduction, scroll reveals, header/parallax frame loop, mobile navigation dialog and contact shortcut
-- `assets/` — brand lockups (`brand/`), leadership portraits (`team/`), field photography (`field/`), hero images, the share card, fonts and the company profile PDF
+- `index.html`, `about.html`, `services.html`, `operations.html`, `compliance.html`, `leadership.html`, `careers.html`, `profile.html`, `contact.html`, `privacy.html`, `terms.html` — the eleven pages, generated (see *The page generator*) but committed as plain static HTML
+- `styles.css` — responsive visual system, shared by every page
+- `script.js` — animated introduction, scroll reveals, header/parallax frame loop, mobile navigation dialog and the enquiry-form mailto composer; page-agnostic
+- `assets/` — brand lockups (`brand/`), leadership portraits (`team/`), field photography (`field/`), hero images, generated service/process imagery (`service/`, `process/`), the share card, fonts and the company profile PDF
+- `CNAME` — the custom domain for GitHub Pages (`www.caretakersecurity.com`)
+- `robots.txt`, `sitemap.xml` — crawler access and the eleven-page sitemap
+- `tools/build-pages/` — `generate.py` and the per-page content fragments it assembles into the eleven HTML files
 - `tools/social-card.html` — the share card's source; screenshot it at 1200 × 630 to regenerate `assets/social-card.jpg`
 - `tools/image-pipeline/` — the grade and logo-composite passes applied to the generated service and process imagery
 
@@ -57,9 +101,12 @@ Then open `http://localhost:8080`.
 - The hero, the leadership portraits and the six frames in **In the field** are the company's own photographs. The four service-card images (`assets/service/`) and the three process-step images (`assets/process/`) are **generated illustrations** — see below.
 - The company profile is served at `assets/caretaker-company-profile.pdf` (8.6 MB). It is the largest asset in the repository; if that matters for cloning, host it externally and point the link there.
 - Archivo (Omnibus-Type) and Saira (Omnibus-Type) are distributed as unmodified WOFF2 files under the SIL Open Font License 1.1. The licences are included at `assets/fonts/OFL.txt` and `assets/fonts/OFL-Saira.txt` and must travel with the fonts.
-- The Standards section links the profile as a real download; it previously opened an email request because the file was missing.
+- The Compliance page links the profile as a real download, and `profile.html` previews it inline; both previously opened an email request because the file was missing.
 - Update the licence details when the stated 2026 validity period changes.
-- A favicon and Apple touch icon, Open Graph/Twitter card tags, a canonical URL and `SecurityService` JSON-LD are in place. The canonical and social URLs point at the GitHub Pages address — change them if a custom domain is added. `robots.txt`, `sitemap.xml` and analytics are still not set up.
+- A favicon and Apple touch icon, Open Graph/Twitter card tags (per page), a canonical URL and `SecurityService` JSON-LD (on Home) are in place. `robots.txt` and `sitemap.xml` list all eleven pages. Analytics is still not set up.
+- **Contact email.** The site used `ctaker@gmail.com` through its earlier revisions — it matched the company profile PDF, but an internal review flagged it as the wrong inbox and named `ctaker10@gmail.com` as correct. Both the site and the PDF now use `ctaker10@gmail.com`; the change was made on that review's authority, not verified independently, so confirm it's actually monitored before relying on it for live enquiries.
+- **Domain.** The canonical, Open Graph and JSON-LD URLs, and the PDF's own "website" line, now read `www.caretakersecurity.com` rather than the GitHub Pages address, and a `CNAME` file requests that domain from GitHub Pages. **This only works once the domain is registered and its DNS points at GitHub Pages** — neither has been done from here. To finish it: register the domain, add a `CNAME` record for `www` pointing at `cartelug.github.io` (or follow [GitHub's custom-domain guide](https://docs.github.com/pages/configuring-a-custom-domain-for-your-github-pages-site) for an apex domain instead), then in the repository's **Settings → Pages**, confirm the custom domain is detected and turn on **Enforce HTTPS** once it verifies. Until then the site keeps working normally at the `cartelug.github.io` address — nothing about the domain switch can break the existing deployment.
+- The company profile PDF's own "WEBSITE" and "EMAIL" lines (page 15) were edited in place with PyMuPDF — a redaction over the old text, Helvetica set at the original size and colour in its place — rather than by regenerating the document, since it's a small, contained correction; the swap is visually seamless against the panel's dark background. Every other page's text is byte-identical to before, confirmed by diffing extracted text page by page.
 - The share card (`assets/social-card.jpg`, 1200 × 630) is branded: the stacked lockup, the headline and the officer, composed in the site's own typography. It is served as JPEG because WebP Open Graph images are still unreliable on LinkedIn and several crawlers; `assets/social-card.webp` carries the same artwork so links shared before the change resolve to the new card rather than a missing file. It is rendered from `tools/social-card.html` through the site's own fonts and colour tokens, not drawn by hand — regenerate it by screenshotting that page at 1200 × 630.
 
 ## Generated imagery
@@ -106,23 +153,29 @@ plan are all blank or abstract by design.
 
 ## Validation
 
-Checked with Playwright (Chromium) at 1440, 1024 and 390 px: no console errors, no page errors, no failed requests. Verified specifically:
+Checked with Playwright (Chromium) across all eleven pages at 1440, 1024 and 390 px — 33 page loads, zero console errors, zero page errors, zero failed requests, zero broken images, zero horizontal scroll, and exactly one `<h1>` per page in every case. Verified specifically:
 
-- the introduction completes, releases the scroll lock, records its session flag and does not replay on same-tab reload;
-- all 63 reveal targets receive their in-view class after scrolling, with none left visually hidden;
-- the mobile dialog opens, closes on Escape and on the close button, and returns focus to the toggle;
-- the header progress rule tracks scroll, and the header retracts and returns under real wheel input;
+- the introduction completes, releases the scroll lock, records its session flag and does not replay on same-tab reload — checked on Home, where it's most visible, and confirmed present (governed by the same shared `<head>` script) on every other page;
+- every reveal target on every page receives its in-view class after scrolling, with none left visually hidden — 140 targets total across the eleven pages at 1440 and 1024px (139 at 390px, where one link is deliberately `display: none` below 899px and so isn't counted), all shown at every width;
+- the header's current-page link carries `aria-current="page"` and a persistent underline on all eight primary-nav pages, and is correctly absent on the three pages (Company Profile, Privacy, Terms) that live outside the primary nav by design;
+- the mobile dialog opens, lists all eight nav destinations, and closes on Escape;
+- the enquiry form's `mailto:` composition was verified directly — filled with name, contact, service and a message containing quotes, an ampersand and a line break, the resulting URL decodes to a clean, correctly-encoded subject and body with every field on its own line;
 - `prefers-reduced-motion: reduce` suppresses the introduction entirely and renders all content;
 - with JavaScript disabled, headings and sections render at full opacity and the introduction stays hidden;
-- every line of hero type and every hero icon clears WCAG AA against the photograph behind it at 1440, 900, 768 and 390 px. Contrast is measured, not judged: the page is captured twice — once composited, once with the hero foreground hidden — and each glyph run is scored against the background pixels under its own `Range` rectangle. Element boxes are not used, because a full-width box includes empty space over the bright side of the photograph and reports failures that are not there. The gold eyebrow and its rule measure 5.7:1 on the phone layout and 8.0:1 on the desktop split; the metallic `holds.` is scored from an exact glyph mask (the composited capture differenced against the blank one) because `background-clip: text` leaves its computed colour transparent, and reaches 6.1:1 at the darkest point of its gradient.
-- the logo renders at its native aspect ratio in the header, footer and introduction at every breakpoint, and sits inside the header box without clipping.
+- every line of hero type and every hero icon on Home clears WCAG AA against the photograph behind it at 1440, 900, 768 and 390 px. Contrast is measured, not judged: the page is captured twice — once composited, once with the hero foreground hidden — and each glyph run is scored against the background pixels under its own `Range` rectangle. Element boxes are not used, because a full-width box includes empty space over the bright side of the photograph and reports failures that are not there. The gold eyebrow and its rule measure 5.7:1 on the phone layout and 8.0:1 on the desktop split; the metallic `holds.` is scored from an exact glyph mask (the composited capture differenced against the blank one) because `background-clip: text` leaves its computed colour transparent, and reaches 6.1:1 at the darkest point of its gradient;
+- the logo renders at its native aspect ratio in the header, footer and introduction at every breakpoint, and sits inside the header box without clipping;
+- every internal `href` across all eleven pages was checked against the set of files that actually exist — none dangle.
 
-The GitHub Actions publish check (`node --check` plus non-empty file checks) passes locally. Manual review on real devices is still recommended before wider release.
+One thing caught and fixed during this pass, not by the automated checks but by a manual full-page capture: the home page's service-capability tiles used a filled grid background as a hairline-gap trick (the same visual effect `.service-grid`'s `border-left` achieves elsewhere, done differently). Because the tiles animate in from `opacity: 0`, that shared fill was briefly visible across the whole row during the reveal transition rather than staying to the 1px gaps — a real, if brief, visual flash for a visitor scrolling at normal speed. Rebuilt to use per-tile borders instead, matching the pattern already used everywhere else on the site.
+
+The GitHub Actions publish check (`node --check` plus a non-empty-file check on every page, `styles.css`, `script.js`, `CNAME`, `robots.txt` and `sitemap.xml`) passes locally. Manual review on real devices is still recommended before wider release.
 
 ## Deployment
 
-The site lives at the repository root, so `index.html` is the entry point for any static host — GitHub Pages, Cloudflare Pages or equivalent.
+The site lives at the repository root as eleven flat HTML files, so `index.html` is the entry point for any static host — GitHub Pages, Cloudflare Pages or equivalent.
 
-Published to GitHub Pages by `.github/workflows/deploy-pages.yml` on pushes to `main`. The repository's Pages source is set to **GitHub Actions**, and the workflow uploads the repository root as the artifact. Because `index.html` is now at the root, the branch-based "Deploy from a branch" source (root folder) would also work if that setting is ever changed.
+Published to GitHub Pages by `.github/workflows/deploy-pages.yml` on pushes to `main`. The repository's Pages source is set to **GitHub Actions**, and the workflow uploads the repository root as the artifact. Because `index.html` is at the root, the branch-based "Deploy from a branch" source (root folder) would also work if that setting is ever changed. The workflow's trigger `paths:` list matches any `*.html` file at the root plus `styles.css`, `script.js`, `assets/**`, `CNAME`, `robots.txt` and `sitemap.xml`, so a push touching only one of the newer pages still deploys — a page added outside that pattern (nested in a folder, say) would need the workflow updated too.
+
+A `CNAME` file requests `www.caretakersecurity.com` as the custom domain; see the **domain** note under *Assets and content* for what's still needed to make that live. Until then, the site is reachable at its GitHub Pages address.
 
 © 2026 Caretaker Security Services Limited.

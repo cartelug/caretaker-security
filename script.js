@@ -300,26 +300,35 @@
 
   createNav();
 
-  /* --- Mobile call shortcut ----------------------------------------------
-     Visible only in the stretch between the hero and the contact details,
-     where no phone number is already on screen. */
-  const createCallShortcut = () => {
-    const shortcut = $('.mobile-call');
-    const hero = $('.hero');
-    const contact = $('#contact');
-    const footer = $('.site-footer');
-    if (!shortcut || !hero || !contact || !footer || !canObserve) return;
+  /* --- Contact enquiry form -----------------------------------------------
+     The form's own action/method/enctype already produce a working mailto
+     submission with no JS at all (imperfect across browsers, but functional).
+     This only replaces that with a cleaner, consistently-encoded mailto link
+     and tells the visitor what just happened — nothing here is required for
+     the form to work. */
+  const createEnquiryForm = () => {
+    const form = $('[data-enquiry-form]');
+    const note = $('[data-enquiry-note]');
+    if (!form) return;
 
-    const onScreen = new Map([[hero, true], [contact, false], [footer, false]]);
-    const observer = new IntersectionObserver((entries) => {
-      for (const entry of entries) onScreen.set(entry.target, entry.isIntersecting);
-      const anchorVisible = [...onScreen.values()].some(Boolean);
-      shortcut.classList.toggle('is-visible', !anchorVisible);
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const data = new FormData(form);
+      const service = data.get('Service') || 'Something else';
+      const lines = [...data.entries()]
+        .filter(([key]) => key !== 'Message')
+        .map(([key, value]) => `${key}: ${value}`);
+      lines.push('', 'Message:', String(data.get('Message') || ''));
+
+      const subject = encodeURIComponent(`Website enquiry — ${service}`);
+      const body = encodeURIComponent(lines.join('\n'));
+      window.location.href = `mailto:ctaker10@gmail.com?subject=${subject}&body=${body}`;
+
+      if (note) note.hidden = false;
     });
-    for (const section of onScreen.keys()) observer.observe(section);
   };
 
-  createCallShortcut();
+  createEnquiryForm();
 
   /* --- Pointer-tracked light and magnetic buttons ------------------------
      Both are pure decoration on a fine pointer. Touch and keyboard users get

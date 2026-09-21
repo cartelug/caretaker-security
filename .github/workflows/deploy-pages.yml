@@ -4,10 +4,13 @@ on:
   push:
     branches: [main]
     paths:
-      - 'index.html'
+      - '*.html'
       - 'styles.css'
       - 'script.js'
       - 'assets/**'
+      - 'CNAME'
+      - 'robots.txt'
+      - 'sitemap.xml'
       - '.nojekyll'
       - '.github/workflows/deploy-pages.yml'
   workflow_dispatch:
@@ -35,9 +38,14 @@ jobs:
 
       - name: Validate publishing files
         run: |
-          test -s index.html
+          for page in index about services operations compliance leadership careers profile contact privacy terms; do
+            test -s "$page.html" || { echo "missing or empty: $page.html"; exit 1; }
+          done
           test -s styles.css
           test -s script.js
+          test -s CNAME
+          test -s robots.txt
+          test -s sitemap.xml
           node --check script.js
 
       - name: Configure GitHub Pages
